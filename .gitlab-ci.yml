@@ -1,0 +1,336 @@
+# Global variables
+variables:
+  RUST_VERSION: "1.91"
+  RUST_CONTAINER: "rust:$RUST_VERSION"
+  TYPST_VERSION: "0.14.1"
+  DOCS_DIR: "$CI_PROJECT_DIR/docs"
+  BINARY_NAME: "gitlab-time-report-cli"
+
+stages:
+  # Builds all the Rust binaries
+  - build
+  # Runs testing and code coverage
+  - test
+  # Builds the Rust and Typst documentation
+  - doc
+  # Deploys artifacts on GitLab pages
+  - deploy
+
+
+###########################################
+#              Job Templates              #
+###########################################
+
+# Template for all Rust stages
+.rust-template:
+  image: $RUST_CONTAINER
+  variables:
+    # Move Cargo Home inside the project directory to enable caching
+    CARGO_HOME: $CI_PROJECT_DIR/.cargo
+    # Display color in Cargo output
+    CARGO_TERM_COLOR: always
+    # Enable incremental builds
+    CARGO_INCREMENTAL: 1
+  # Cache configuration to speed up builds by reusing dependencies
+  cache: &rust-cache
+    # Use Cargo.lock as the cache key to reuse cache across branches
+    key:
+      files:
+        - Cargo.lock
+      prefix: rust-$RUST_VERSION
+    paths:
+      # Use recommended cargo cache paths
+      # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
+      - .cargo/.crates.toml
+      - .cargo/.crates2.json
+      - .cargo/bin/
+      - .cargo/registry/index/
+      - .cargo/registry/cache/
+      - .cargo/git/db/
+      # Cache compiled artifacts
+      - target/
+  before_script:
+    # Add Cargo `bin` directory to PATH. Needs to be set here, as PATH doesn't get expanded inside `variables:`
+    - export PATH="$CARGO_HOME/bin:$PATH"
+    # Install packages if the APT_PACKAGES variable is set by the job
+    - if [ -v APT_PACKAGES ]; then apt-get -qq update && apt-get -qq install $APT_PACKAGES; fi
+    # Install cargo packages if the CARGO_CRATES variable is set by the job
+    # Install cargo-bininstall to download pre-built binaries instead of compiling them each time
+    - if [ -v CARGO_CRATES ]; then
+      curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash;
+      cargo binstall --no-confirm $CARGO_CRATES; fi
+  artifacts:
+    # Let all Rust artifacts expire to save storage
+    expire_in: 1 week
+  rules:
+    # Always run on main branch to generate files for GitLab Pages deployment
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # On feature branches, run Rust jobs only when files in 'src' or root Cargo files change
+    - changes:
+        - src/**/*
+        - Cargo.lock
+        - Cargo.toml
+
+# Template for building Rust for different OS/architectures
+.rust-build-release-template:
+  extends: .rust-template
+  stage: build
+  cache:
+    # Don't upload release build files to the cache
+    policy: pull
+  script:
+    # Install the toolchain for the target platform (cross-compilation)
+    - rustup target add $TARGET
+    # Build release build for the target platform
+    - cargo $CARGO_SUBCOMMAND build --workspace --release --target $TARGET
+  rules:
+    # Create release builds only on the main branch
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+###########################################
+#               Rust Jobs                 #
+###########################################
+
+# Create a build with the "test" profile for reuse with later stages
+build:debug:
+  extends: .rust-template
+  stage: build
+  script:
+    # Building with the test profile also builds the test cases
+    - cargo build --workspace --profile test
+  artifacts:
+    paths:
+      # Store debug application for reuse in doc:gitlab-time-report job
+      - target/debug/$BINARY_NAME
+
+# Create release build for Windows
+build:windows:
+  extends: .rust-build-release-template
+  cache:
+    # Cache the MSVC files
+    - key: xwin-msvc
+      paths:
+        - $XWIN_CACHE_DIR
+      policy: pull-push
+    # Add Rust cache back
+    - *rust-cache
+  variables:
+    # Windows x64 with MSVC toolchain
+    # Requires installing the MSVC Build Tools, we do it via cargo-xwin
+    TARGET: x86_64-pc-windows-msvc
+    # Install clang and llvm for cargo-xwin
+    APT_PACKAGES: "clang llvm"
+    # Install cargo-xwin to build for the MSVC toolchain
+    CARGO_CRATES: cargo-xwin
+    # Run the xwin command with Cargo
+    CARGO_SUBCOMMAND: xwin
+    # Set the cache directory for cargo-xwin
+    XWIN_CACHE_DIR: $CI_PROJECT_DIR/.xwin
+  artifacts:
+    paths:
+      - target/$TARGET/release/$BINARY_NAME.exe
+
+# Create release build for Linux
+build:linux:
+  extends: .rust-build-release-template
+  variables:
+    # Linux x64 with glibc
+    TARGET: x86_64-unknown-linux-gnu
+  artifacts:
+    paths:
+      - target/$TARGET/release/$BINARY_NAME
+
+#######################################################
+
+# Run the clippy linter on the Rust code
+test:clippy:
+  extends: .rust-template
+  stage: test
+  cache:
+    # Only download cache, don't upload output to the cache to speed up job
+    policy: pull
+  script:
+    - rustup component add clippy
+    - cargo clippy --workspace --all-targets -- -D warnings
+
+# Run the tests
+test:
+  extends: .rust-template
+  stage: test
+  variables:
+    # Required to enable cargo unstable options on the stable toolchain
+    RUSTC_BOOTSTRAP: 1
+    # Outputs backtraces in failed tests
+    RUST_BACKTRACE: full
+    # Install junitify to turn Cargo JSON into JUnit Reports for GitLab
+    CARGO_CRATES: junitify
+  script:
+    # Run all tests, create JSON output and parse it to JUnit format
+    - cargo test --workspace -- -Z unstable-options --format json --report-time | junitify --out $CI_PROJECT_DIR/tests/
+  artifacts:
+    when: always
+    reports:
+      junit: $CI_PROJECT_DIR/tests/*.xml
+
+# Generate line and code coverage
+test:coverage:
+  extends: .rust-template
+  stage: test
+  cache:
+    # Only download cache, don't upload output to the cache to speed up job
+    policy: pull
+  variables:
+    # Install cargo-tarpaulin for code coverage reports
+    CARGO_CRATES: cargo-tarpaulin
+  script:
+    # Run code coverage and generate HTML and XML
+    - cargo tarpaulin --workspace --engine llvm --no-fail-fast --out html --out xml
+  artifacts:
+    paths:
+      # Store HTML report
+      - tarpaulin-report.html
+    reports:
+      coverage_report:
+        # Generates line coverage data in GitLab
+        coverage_format: cobertura
+        path: cobertura.xml
+  # Regex pattern to capture the total region coverage. Will be displayed in Merge Requests
+  coverage: '/^\d+.\d+% coverage/'
+
+
+#######################################################
+
+# Build the code documentation from Rust doc comments
+doc:rust-documentation:
+  extends: .rust-template
+  stage: doc
+  cache:
+    # Only download cache, don't upload output to the cache to speed up job
+    policy: pull
+  script:
+    - cargo doc --workspace --no-deps --document-private-items
+  artifacts:
+    paths:
+      - target/doc
+
+
+###########################################
+#           Documentation Jobs            #
+###########################################
+
+# Create the dashboard and the time tracking charts
+doc:gitlab-time-report:
+  stage: doc
+  # Download gitlab-time-report debug build from the current pipeline, if running
+  needs:
+    - job: build:debug
+      optional: true
+  image: debian:latest
+  variables:
+    RELEASE_BUILD_URL: $CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_DEFAULT_BRANCH/raw/target/x86_64-unknown-linux-gnu/release/$BINARY_NAME?job=build:linux&job_token=$CI_JOB_TOKEN
+    GITLAB_LABELS: 'CI/CD,Development,Documentation,Usability,Meetings,Project Setup'
+    SPRINTS: 7
+    WEEKS_PER_SPRINT: 2
+    HOURS_PER_PERSON: 240
+  before_script:
+    - apt-get -qq update && apt-get -qq install ca-certificates
+  script:
+    # Check if "build:debug" has been run this pipeline, if so, use that binary
+    # Else download the release build from the latest successful pipeline on main
+    - if [ -f ./target/debug/$BINARY_NAME ];
+      then mv ./target/debug/$BINARY_NAME .;
+      else apt-get -qq install wget;
+      wget --no-verbose -O $BINARY_NAME $RELEASE_BUILD_URL; fi
+    # Make binary executable
+    - chmod +x $BINARY_NAME
+    # Generate dashboard, which also generates charts
+    - ./$BINARY_NAME $CI_PROJECT_URL --token $PROJECT_TOKEN dashboard -w 500 -h 300
+  artifacts:
+    paths:
+      - charts
+      - dashboard.html
+  rules:
+    # Always run on the main branch
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # On feature branches, run Typst job only when files in 'docs' change
+    - changes:
+        # GitLab doesn't evaluate paths here, '$DOCS_DIR/**/*' doesn't work
+        - docs/**/*
+
+# Build steps for the Typst documentation
+doc:typst-documentation:
+  stage: doc
+  image:
+    name: ghcr.io/typst/typst:$TYPST_VERSION
+    entrypoint: [ "" ]
+  needs: 
+    - job: "doc:gitlab-time-report"
+    - job: "test:coverage"
+      optional: true
+  variables:
+    # Let Typst know about the fonts on the repository
+    TYPST_FONT_PATHS: "$DOCS_DIR/.fonts"
+  script:
+    # Move charts into the documentation 
+    - mv -f charts/*.svg $DOCS_DIR/Images/Time-Tracking/
+    # Move dashboard into the documentation
+    - mv -f dashboard.html $DOCS_DIR/Images/Time-Tracking/
+    # Move code coverage report into documentation if job has been ran
+    - if [ -f ./tarpaulin-report.html ];
+      then mv ./tarpaulin-report.html $DOCS_DIR/Images/tarpaulin-report.html; fi
+    # Log fonts detected by Typst
+    - typst fonts
+    - typst compile $DOCS_DIR/main.typ --input build=release
+  artifacts:
+    # Store the PDF as build artifact
+    paths:
+      - $DOCS_DIR/main.pdf
+    # Let the PDF expire to save storage
+    expire_in: 1 week
+  rules:
+    # Always run on the main branch
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # On feature branches, run Typst job only when files in 'docs' change
+    - changes:
+        # GitLab doesn't evaluate paths here, '$DOCS_DIR/**/*' doesn't work
+        - docs/**/*
+
+
+###########################################
+#               Deploy Jobs               #
+###########################################
+
+# Deploy resources to GitLab Pages
+pages:
+  stage: deploy
+  needs: [ "doc:typst-documentation", "doc:rust-documentation", "doc:gitlab-time-report", "test:coverage" ]
+  pages: true
+  script:
+    # Create Pages folders if they don't exist
+    - mkdir -p public
+    - mkdir -p public/code-coverage
+    # Deploy Typst PDF
+    - mv $DOCS_DIR/main.pdf public/documentation.pdf
+    # Deploy HTML code coverage report
+    - mv tarpaulin-report.html public/code-coverage/index.html
+    # Deploy HTML Rust code documentation
+    - mv target/doc public/code-doc
+    # Deploy dashboard
+    - mv dashboard.html public/dashboard.html
+  rules:
+    # Only deploy when pushing to main
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+
+###########################################
+#            Merge Request Jobs           #
+###########################################
+
+# Without this job, changes to non-Rust/Typst files would never trigger the pipeline in an MR
+# so it can never be merged. Always runs on Merge Requests, even when Rust/Typst jobs run.
+dummy-merge-request-job:
+  # Set to doc so it can always run in parallel with the Typst/Rust jobs
+  stage: doc
+  script: echo "Creates a pipeline even if no Rust/Typst files were changed in this Merge Request"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"

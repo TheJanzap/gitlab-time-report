@@ -1,0 +1,21 @@
+[workspace]
+resolver = "3"
+members = ["src/*"]
+default-members = ["src/cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+
+[workspace.dependencies]
+gitlab-time-report = { path = "src/gitlab-time-report" }
+chrono = { version = "0.4.42", default-features = false }
+
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tarpaulin_include)', 'cfg(tarpaulin)'] }
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+match_bool = "allow" # Personal preference
+implicit_hasher = "allow" # Unnecessary for our purposes
+unwrap_used = "warn" # Set to warn so we can still test with unwrap. CI will fail it anyway

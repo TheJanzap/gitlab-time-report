@@ -1,0 +1,69 @@
+query($projectPath: ID!, $after: String) {
+  project(fullPath: $projectPath) {
+    name
+    timelogs(first: 100, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      totalSpentTime
+      nodes {
+        spentAt
+        timeSpent
+        summary
+        user {
+          name
+          username
+        }
+        issue {
+          iid
+          title
+          timeEstimate
+          totalTimeSpent
+          assignees {
+            nodes {
+              name
+              username
+            }
+          }
+          milestone {
+            title
+            dueDate
+          }
+          labels {
+            nodes {
+              title
+            }
+          }
+        }
+        mergeRequest {
+          iid
+          title
+          timeEstimate
+          totalTimeSpent
+          assignees {
+            nodes {
+              name
+              username
+            }
+          }
+          reviewers {
+            nodes {
+              name
+              username
+            }
+          }
+          milestone {
+            title
+            dueDate
+          }
+          labels {
+            nodes {
+              title
+            }
+          }
+        }
+      }
+    }
+  }
+}

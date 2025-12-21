@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>$main_title</title>
+    <link href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iRWJlbmVfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI5LjguMywgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDIuMS4xIEJ1aWxkIDMpICAtLT4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLnN0MCB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLnN0MSB7CiAgICAgICAgZmlsbDogIzFlMWYyOTsKICAgICAgICBzdHJva2U6ICMxZTFmMjk7CiAgICAgICAgc3Ryb2tlLWxpbmVqb2luOiByb3VuZDsKICAgICAgICBzdHJva2Utd2lkdGg6IDEuNXB4OwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8Y2lyY2xlIGNsYXNzPSJzdDAiIGN4PSIxNS44MyIgY3k9IjE1Ljg2IiByPSIxNS4zOSIvPgogIDxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik0xMy41MywxNi41OWw0LjItNy4yM2MtMy4yOS0xLjkxLTcuNTctMS4zOS0xMC4yOCwxLjUtMy4xNywzLjM2LTMuMDEsOC42Ni4zNSwxMS44MywzLjM2LDMuMTcsOC42NiwzLjAxLDExLjgzLS4zNS41OC0uNjIsMS4wNS0xLjMsMS40MS0yLjAybC03LjUxLTMuNzNaIi8+CiAgPHBhdGggY2xhc3M9InN0MSIgZD0iTTE4LjcsMTQuNjRsNi42OCwzLjMyYzEuMTctMy4wNy40Ni02LjY3LTIuMDgtOS4wNy0uMjctLjI1LS41Ni0uNDgtLjg1LS42OWwtMy43NCw2LjQ0WiIvPgo8L3N2Zz4="
+          rel="icon"
+          type="image/x-icon">
+    <style>
+        :root {
+            --font-size: 15px;
+            --bg-color: #f5f6fa;
+            --bg-color-light: #fff;
+            --shadow-color: rgb(66, 68, 90);
+            --text-color: #1e1f29;
+            --gap: 20px;
+            --border-color: #ddd;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #282f3c;
+                --bg-color-light: #1e2631;
+                --shadow-color: rgb(66, 68, 90, 0);
+                --text-color: #e5e7ef;
+                --border-color: var(--text-color);
+            }
+        }
+
+        * {
+            font-family: system-ui;
+            box-sizing: border-box;
+            color: var(--text-color);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-size: var(--font-size);
+        }
+
+        h2 {
+            font-size: 1.1rem;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid var(--border-color);
+            padding: var(--gap) calc(var(--gap) / 2);
+            border-right: none;
+            border-left: none;
+        }
+
+        th {
+            text-align: left;
+            text-transform: uppercase;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        th::after {
+            content: "⇅";
+            width: 1.2em;
+            display: inline-block;
+            opacity: 0.35;
+            padding-left: 10px;
+        }
+
+        th:hover::after {
+            opacity: 1;
+        }
+
+        th[data-sort-dir="asc"]::after {
+            content: "▲";
+            opacity: 1;
+        }
+
+        th[data-sort-dir="desc"]::after {
+            content: "▼";
+            opacity: 1;
+        }
+
+        tfoot {
+            font-weight: bold;
+        }
+
+        h1 {
+            margin: 0 0 5px;
+        }
+
+        header, .bg_section {
+            margin: var(--gap);
+        }
+
+        header, .bg_section, .chart_elem > div {
+            padding: var(--gap);
+            border-radius: 8px;
+            box-shadow: 1px 1px 15px -14px var(--shadow-color);
+            background-color: var(--bg-color-light);
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .chart_elem, .flex-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            justify-content: stretch;
+            gap: var(--gap);
+            margin: var(--gap);
+        }
+
+        .chart_elem > div {
+            width: 100%;
+            height: clamp(350px, 70vh, 600px);
+        }
+
+        .flex-container > section {
+            margin: 0;
+        }
+
+        #timestamp {
+            visibility: hidden;
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --font-size: 14px;
+                --gap: 15px;
+            }
+
+            .chart_elem,
+            .flex-container {
+                grid-template-columns: 1fr;
+            }
+
+            .chart_elem > div {
+                height: 130vw;
+            }
+
+            .flex-container {
+                display: block;
+            }
+
+            .flex-container .bg_section:first-of-type {
+                margin-bottom: var(--gap);
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>$main_title</h1>
+    <span>Data generated on <span id="timestamp">$timestamp</span></span>
+</header>
+<main>
+    <section>
+        <div class="chart_elem">
+            $charts_divs
+        </div>
+    </section>
+    <section class="bg_section">
+        <h2>$sub_title_1</h2>
+        <div class="table-wrapper">
+            $content_1
+        </div>
+    </section>
+    <div class="flex-container">
+        <section class="bg_section">
+            <h2>$sub_title_2</h2>
+            <div class="table-wrapper">
+                $content_2
+            </div>
+        </section>
+        <section class="bg_section">
+            <h2>$sub_title_3</h2>
+            <div class="table-wrapper">
+                $content_3
+            </div>
+        </section>
+    </div>
+</main>
+<script>
+    function convertTimestampToLocal() {
+        const timestamp = document.getElementById("timestamp");
+        const old_timestamp = timestamp.textContent;
+        const date = new Date(old_timestamp);
+
+        timestamp.textContent = date.toLocaleString(navigator.languages[0], {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short'
+        });
+
+        timestamp.style.visibility = "visible";
+    }
+
+    function makeTablesSortable(selector = 'table') {
+        const HM_REGEX = /^(\d+)h\s+(\d{2})m$/;
+
+        function getRawCellValue(row, columnIndex) {
+            const cell = row.children[columnIndex];
+            if (!cell) return "";
+            return (cell.dataset.sortValue || cell.textContent).trim();
+        }
+
+        function toMinutes(raw) {
+            const match = raw.match(HM_REGEX);
+            if (!match) return 0;
+            const hours = parseInt(match[1], 10);
+            const minutes = parseInt(match[2], 10);
+            return hours * 60 + minutes;
+        }
+
+        function detectColumnType(rows, columnIndex) {
+            if (rows.length === 0) return "";
+            return rows.every(row => HM_REGEX.test(getRawCellValue(row, columnIndex)))
+                ? "duration"
+                : "string";
+        }
+
+        document.querySelectorAll(selector).forEach(function (table) {
+            const thead = table.tHead;
+            const tbody = table.tBodies[0];
+            if (!thead || !tbody) return;
+
+            const headers = thead.querySelectorAll('th');
+
+            headers.forEach(function (currentHeader, columnIndex) {
+                currentHeader.setAttribute('aria-sort', 'none');
+
+                currentHeader.addEventListener('click', function () {
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    if (rows.length === 0) return;
+
+                    const columnType = detectColumnType(rows, columnIndex);
+
+                    const currentDirection = currentHeader.dataset.sortDir === 'asc' ? 'desc' : 'asc';
+
+                    // Reset all other headers
+                    headers.forEach(function (header) {
+                        if (header !== currentHeader) {
+                            header.removeAttribute('data-sort-dir');
+                            header.setAttribute('aria-sort', 'none');
+                        }
+                    });
+
+                    currentHeader.dataset.sortDir = currentDirection;
+                    currentHeader.setAttribute(
+                        'aria-sort',
+                        currentDirection === 'asc' ? 'ascending' : 'descending'
+                    );
+
+                    rows.sort(function (rowA, rowB) {
+                        const rawA = getRawCellValue(rowA, columnIndex);
+                        const rawB = getRawCellValue(rowB, columnIndex);
+
+                        if (columnType === "duration") {
+                            const a = toMinutes(rawA);
+                            const b = toMinutes(rawB);
+                            return currentDirection === "asc" ? a - b : b - a;
+                        }
+                        return currentDirection === "asc"
+                            ? rawA.localeCompare(rawB, undefined, {numeric: true})
+                            : rawB.localeCompare(rawA, undefined, {numeric: true});
+                    });
+
+                    // Re-attach rows in sorted order
+                    rows.forEach(function (row) {
+                        tbody.appendChild(row);
+                    });
+                });
+            });
+        });
+    }
+
+    function resizeCharts() {
+        if (!window.echarts) return;
+
+        const charts = document.querySelectorAll('.chart_elem > div');
+        charts.forEach(function (el) {
+            const chart = echarts.getInstanceByDom(el);
+            if (chart) {
+                chart.resize();
+            }
+        });
+    }
+
+    let resizeTimeout;
+    window.addEventListener('resize', function () {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(resizeCharts, 300);
+    });
+
+
+    function setColorTheme(theme) {
+        if (theme) {
+            return theme;
+        }
+        const prefersDarkScheme =
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        return prefersDarkScheme ? 'dark' : '';
+    }
+
+    function getChartBackgroundColor() {
+        return getComputedStyle(document.documentElement)
+            .getPropertyValue('--bg-color-light')
+            .trim();
+    }
+
+    convertTimestampToLocal();
+    makeTablesSortable("table");
+</script>
+$external_script_tags
+<script>
+    $charts_js
+</script>
+</body>
+</html>

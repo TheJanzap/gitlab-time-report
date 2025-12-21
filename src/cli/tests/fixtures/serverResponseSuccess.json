@@ -1,0 +1,330 @@
+{
+  "data": {
+    "project": {
+      "name": "Test",
+      "timelogs": {
+        "pageInfo": {
+          "hasNextPage": false,
+          "endCursor": "random"
+        },
+        "totalSpentTime": "5400",
+        "nodes": [
+          {
+            "spentAt": "2025-10-01T12:00:00+02:00",
+            "timeSpent": 600,
+            "summary": "",
+            "user": {
+              "name": "Integration Test User 1",
+              "username": "int-user-1"
+            },
+            "issue": {
+              "iid": "2",
+              "title": "Child Task 1",
+              "timeEstimate": 0,
+              "totalTimeSpent": 3600,
+              "assignees": {
+                "nodes": []
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": []
+              }
+            },
+            "mergeRequest": null
+          },
+          {
+            "spentAt": "2025-10-08T12:00:00+02:00",
+            "timeSpent": 900,
+            "summary": "",
+            "user": {
+              "name": "Integration Test User 2",
+              "username": "int-user-2"
+            },
+            "issue": null,
+            "mergeRequest": {
+              "iid": "1",
+              "title": "test timelogs on merge requests",
+              "timeEstimate": 0,
+              "totalTimeSpent": 900,
+              "assignees": {
+                "nodes": [
+                  {
+                    "name": "Integration Test User 2",
+                    "username": "int-user-2"
+                  }
+                ]
+              },
+              "reviewers": {
+                "nodes": [
+                  {
+                    "name": "Integration Test User 2",
+                    "username": "int-user-2"
+                  }
+                ]
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": []
+              }
+            }
+          },
+          {
+            "spentAt": "2025-10-09T12:00:00+02:00",
+            "timeSpent": 900,
+            "summary": "",
+            "user": {
+              "name": "Integration Test User 2",
+              "username": "int-user-2"
+            },
+            "issue": {
+              "iid": "2",
+              "title": "Child Task 1",
+              "timeEstimate": 0,
+              "totalTimeSpent": 3600,
+              "assignees": {
+                "nodes": []
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": []
+              }
+            },
+            "mergeRequest": null
+          },
+          {
+            "spentAt": "2025-10-09T12:00:00+02:00",
+            "timeSpent": 900,
+            "summary": "",
+            "user": {
+              "name": "Integration Test User 2",
+              "username": "int-user-2"
+            },
+            "issue": {
+              "iid": "1",
+              "title": "Parent Issue 1",
+              "timeEstimate": 0,
+              "totalTimeSpent": 900,
+              "assignees": {
+                "nodes": [
+                  {
+                    "name": "Integration Test User 2",
+                    "username": "int-user-2"
+                  }
+                ]
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": []
+              }
+            },
+            "mergeRequest": null
+          },
+          {
+            "spentAt": "2025-10-16T12:58:38+02:00",
+            "timeSpent": 1800,
+            "summary": "",
+            "user": {
+              "name": "Integration Test User 1",
+              "username": "int-user-1"
+            },
+            "issue": {
+              "iid": "1",
+              "title": "Parent Issue 1",
+              "timeEstimate": 0,
+              "totalTimeSpent": 900,
+              "assignees": {
+                "nodes": [
+                  {
+                    "name": "Integration Test User 2",
+                    "username": "int-user-2"
+                  }
+                ]
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": []
+              }
+            },
+            "mergeRequest": null
+          },
+          {
+            "spentAt": "2025-10-16T12:58:56+02:00",
+            "timeSpent": -900,
+            "summary": null,
+            "user": {
+              "name": "Integration Test User 1",
+              "username": "int-user-1"
+            },
+            "issue": {
+              "iid": "1",
+              "title": "Parent Issue 1",
+              "timeEstimate": 0,
+              "totalTimeSpent": 900,
+              "assignees": {
+                "nodes": [
+                  {
+                    "name": "Integration Test User 2",
+                    "username": "int-user-2"
+                  }
+                ]
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": []
+              }
+            },
+            "mergeRequest": null
+          },
+          {
+            "spentAt": "2025-10-21T08:31:03+02:00",
+            "timeSpent": -900,
+            "summary": null,
+            "user": {
+              "name": "Integration Test User 1",
+              "username": "int-user-1"
+            },
+            "issue": {
+              "iid": "1",
+              "title": "Parent Issue 1",
+              "timeEstimate": 0,
+              "totalTimeSpent": 900,
+              "assignees": {
+                "nodes": [
+                  {
+                    "name": "Integration Test User 2",
+                    "username": "int-user-2"
+                  }
+                ]
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": []
+              }
+            },
+            "mergeRequest": null
+          },
+          {
+            "spentAt": "2025-10-21T14:01:58+02:00",
+            "timeSpent": 3600,
+            "summary": "",
+            "user": {
+              "name": "Integration Test User 2",
+              "username": "int-user-2"
+            },
+            "issue": {
+              "iid": "2",
+              "title": "Child Task 1",
+              "timeEstimate": 0,
+              "totalTimeSpent": 3600,
+              "assignees": {
+                "nodes": []
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": []
+              }
+            },
+            "mergeRequest": null
+          },
+          {
+            "spentAt": "2025-10-25T11:23:09+02:00",
+            "timeSpent": 10200,
+            "summary": "",
+            "user": {
+              "name": "Integration Test User 1",
+              "username": "int-user-1"
+            },
+            "issue": {
+              "iid": "2",
+              "title": "Child Task 1",
+              "timeEstimate": 0,
+              "totalTimeSpent": 3600,
+              "assignees": {
+                "nodes": []
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": [
+                  {
+                    "title": "Bug"
+                  }
+                ]
+              }
+            },
+            "mergeRequest": null
+          },
+          {
+            "spentAt": "2025-10-25T12:25:47+02:00",
+            "timeSpent": -17100,
+            "summary": null,
+            "user": {
+              "name": "Integration Test User 1",
+              "username": "int-user-1"
+            },
+            "issue": {
+              "iid": "2",
+              "title": "Child Task 1",
+              "timeEstimate": 0,
+              "totalTimeSpent": 3600,
+              "assignees": {
+                "nodes": []
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": []
+              }
+            },
+            "mergeRequest": null
+          },
+          {
+            "spentAt": "2025-10-25T12:26:38+02:00",
+            "timeSpent": 3600,
+            "summary": "",
+            "user": {
+              "name": "Integration Test User 1",
+              "username": "int-user-1"
+            },
+            "issue": {
+              "iid": "2",
+              "title": "Child Task 1",
+              "timeEstimate": 0,
+              "totalTimeSpent": 3600,
+              "assignees": {
+                "nodes": []
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": []
+              }
+            },
+            "mergeRequest": null
+          },
+          {
+            "spentAt": "2025-11-22T12:00:00+01:00",
+            "timeSpent": 1800,
+            "summary": "",
+            "user": {
+              "name": "Integration Test User 1",
+              "username": "int-user-1"
+            },
+            "issue": {
+              "iid": "2",
+              "title": "Child Task 1",
+              "timeEstimate": 0,
+              "totalTimeSpent": 3600,
+              "assignees": {
+                "nodes": []
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": []
+              }
+            },
+            "mergeRequest": null
+          }
+        ]
+      }
+    }
+  },
+  "correlationId": "random-correlation-id"
+}
