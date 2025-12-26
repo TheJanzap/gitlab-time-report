@@ -106,9 +106,6 @@ build:debug:
     paths:
       # Store debug application for reuse in doc:gitlab-time-report job
       - target/debug/$BINARY_NAME
-  rules:
-    # Only create debug builds on feature branches
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
 
 # Create release build for Windows
 build:windows:
@@ -232,7 +229,7 @@ doc:rust-documentation:
 doc:gitlab-time-report:
   stage: doc
   # Download gitlab-time-report debug build from the current pipeline, if running
-  needs: [ "build:linux" ]
+  needs: [ "build:debug" ]
   image: debian:latest
   variables:
     SPRINTS: 7
@@ -242,7 +239,7 @@ doc:gitlab-time-report:
     - apt-get -qq update && apt-get -qq install ca-certificates
   script:
     # Move the executable into the working directory
-    - mv ./target/x86_64-unknown-linux-gnu/release/$BINARY_NAME .
+    - mv ./target/debug/$BINARY_NAME .
     # Make binary executable
     - chmod +x $BINARY_NAME
     # Generate dashboard, which also generates charts
