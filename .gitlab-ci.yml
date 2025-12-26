@@ -88,8 +88,8 @@ stages:
     # Build release build for the target platform
     - cargo $CARGO_SUBCOMMAND build --workspace --release --target $TARGET
   rules:
-    # Create release builds only on the main branch
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # Run if a new Git tag is created
+    - if: $CI_COMMIT_TAG
 
 ###########################################
 #               Rust Jobs                 #
