@@ -1,14 +1,18 @@
 [workspace]
 resolver = "3"
 members = ["src/*"]
-default-members = ["src/cli"]
+default-members = ["src/gitlab-time-report-cli"]
 
 [workspace.package]
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
+license = "GPL-3.0-or-later"
+repository = "https://gitlab.com/gitlab-time-report/gitlab-time-report"
+keywords = ["gitlab", "project-management", "time-tracking"]
+categories = ["command-line-utilities", "visualization"]
 
 [workspace.dependencies]
-gitlab-time-report = { path = "src/gitlab-time-report" }
+gitlab-time-report = { path = "src/gitlab-time-report", version = "1.0.0" }
 chrono = { version = "0.4.42", default-features = false }
 
 [workspace.lints.rust]

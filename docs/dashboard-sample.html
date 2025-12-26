@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Sample Repository Time Tracking Dashboard</title>
+    <link href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iRWJlbmVfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI5LjguMywgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDIuMS4xIEJ1aWxkIDMpICAtLT4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLnN0MCB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLnN0MSB7CiAgICAgICAgZmlsbDogIzFlMWYyOTsKICAgICAgICBzdHJva2U6ICMxZTFmMjk7CiAgICAgICAgc3Ryb2tlLWxpbmVqb2luOiByb3VuZDsKICAgICAgICBzdHJva2Utd2lkdGg6IDEuNXB4OwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8Y2lyY2xlIGNsYXNzPSJzdDAiIGN4PSIxNS44MyIgY3k9IjE1Ljg2IiByPSIxNS4zOSIvPgogIDxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik0xMy41MywxNi41OWw0LjItNy4yM2MtMy4yOS0xLjkxLTcuNTctMS4zOS0xMC4yOCwxLjUtMy4xNywzLjM2LTMuMDEsOC42Ni4zNSwxMS44MywzLjM2LDMuMTcsOC42NiwzLjAxLDExLjgzLS4zNS41OC0uNjIsMS4wNS0xLjMsMS40MS0yLjAybC03LjUxLTMuNzNaIi8+CiAgPHBhdGggY2xhc3M9InN0MSIgZD0iTTE4LjcsMTQuNjRsNi42OCwzLjMyYzEuMTctMy4wNy40Ni02LjY3LTIuMDgtOS4wNy0uMjctLjI1LS41Ni0uNDgtLjg1LS42OWwtMy43NCw2LjQ0WiIvPgo8L3N2Zz4="
+          rel="icon"
+          type="image/x-icon">
+    <style>
+        :root {
+            --font-size: 15px;
+            --bg-color: #f5f6fa;
+            --bg-color-light: #fff;
+            --shadow-color: rgb(66, 68, 90);
+            --text-color: #1e1f29;
+            --gap: 20px;
+            --border-color: #ddd;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #282f3c;
+                --bg-color-light: #1e2631;
+                --shadow-color: rgb(66, 68, 90, 0);
+                --text-color: #e5e7ef;
+                --border-color: var(--text-color);
+            }
+        }
+
+        * {
+            font-family: system-ui;
+            box-sizing: border-box;
+            color: var(--text-color);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-size: var(--font-size);
+        }
+
+        h2 {
+            font-size: 1.1rem;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid var(--border-color);
+            padding: var(--gap) calc(var(--gap) / 2);
+            border-right: none;
+            border-left: none;
+        }
+
+        th {
+            text-align: left;
+            text-transform: uppercase;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        th::after {
+            content: "⇅";
+            width: 1.2em;
+            display: inline-block;
+            opacity: 0.35;
+            padding-left: 10px;
+        }
+
+        th:hover::after {
+            opacity: 1;
+        }
+
+        th[data-sort-dir="asc"]::after {
+            content: "▲";
+            opacity: 1;
+        }
+
+        th[data-sort-dir="desc"]::after {
+            content: "▼";
+            opacity: 1;
+        }
+
+        tfoot {
+            font-weight: bold;
+        }
+
+        h1 {
+            margin: 0 0 5px;
+        }
+
+        header, .bg_section {
+            margin: var(--gap);
+        }
+
+        header, .bg_section, .chart_elem > div {
+            padding: var(--gap);
+            border-radius: 8px;
+            box-shadow: 1px 1px 15px -14px var(--shadow-color);
+            background-color: var(--bg-color-light);
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .chart_elem, .flex-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            justify-content: stretch;
+            gap: var(--gap);
+            margin: var(--gap);
+        }
+
+        .chart_elem > div {
+            width: 100%;
+            height: clamp(350px, 70vh, 600px);
+        }
+
+        .flex-container > section {
+            margin: 0;
+        }
+
+        #timestamp {
+            visibility: hidden;
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --font-size: 14px;
+                --gap: 15px;
+            }
+
+            .chart_elem,
+            .flex-container {
+                grid-template-columns: 1fr;
+            }
+
+            .chart_elem > div {
+                height: 130vw;
+            }
+
+            .flex-container {
+                display: block;
+            }
+
+            .flex-container .bg_section:first-of-type {
+                margin-bottom: var(--gap);
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Sample Repository Time Tracking Dashboard</h1>
+    <span>Data generated on <span id="timestamp">2025-12-21T12:51:26.599260160+01:00</span></span>
+</header>
+<main>
+    <section>
+        <div class="chart_elem">
+            <div id="chart-0"></div><div id="chart-1"></div><div id="chart-2"></div><div id="chart-3"></div><div id="chart-4"></div><div id="chart-5"></div><div id="chart-6"></div><div id="chart-7"></div><div id="chart-8"></div>
+        </div>
+    </section>
+    <section class="bg_section">
+        <h2>Time Spent per User:</h2>
+        <div class="table-wrapper">
+            <table><thead><tr><th>User</th><th>Today</th><th>Yesterday</th><th>Last seven days</th><th>Last 30 days</th><th>Total time spent</th></tr></thead><tbody><tr><td>John Carmack</td><td>03h 45m</td><td>05h 15m</td><td>33h 15m</td><td>92h 45m</td><td>136h 45m</td></tr><tr><td>Will Wright</td><td>06h 15m</td><td>04h 45m</td><td>29h 30m</td><td>58h 15m</td><td>117h 00m</td></tr><tr><td>Roberta Williams</td><td>04h 45m</td><td>05h 30m</td><td>34h 00m</td><td>79h 15m</td><td>126h 45m</td></tr><tr><td>Shigeru Miyamoto</td><td>10h 00m</td><td>08h 00m</td><td>31h 15m</td><td>86h 45m</td><td>128h 00m</td></tr><tr><td>David Wise</td><td>04h 30m</td><td>06h 45m</td><td>27h 00m</td><td>91h 30m</td><td>120h 50m</td></tr></tbody><tfoot><tr class="total-row"><td>Total</td><td>29h 15m</td><td>155h 00m</td><td>155h 00m</td><td>408h 30m</td><td>629h 20m</td></tr></tfoot></table>
+        </div>
+    </section>
+    <div class="flex-container">
+        <section class="bg_section">
+            <h2>Time Spent per Label:</h2>
+            <div class="table-wrapper">
+                <table><thead><tr><th>Label</th><th>Time Spent</th></tr></thead><tbody><tr><td>Architecture</td><td>21h 30m</td></tr><tr><td>Backend</td><td>89h 45m</td></tr><tr><td>BusinessModelling</td><td>39h 15m</td></tr><tr><td>CI/CD</td><td>38h 45m</td></tr><tr><td>Documentation</td><td>108h 45m</td></tr><tr><td>Frontend</td><td>42h 00m</td></tr><tr><td>Meeting</td><td>107h 00m</td></tr><tr><td>Others</td><td>273h 05m</td></tr></tbody></table>
+            </div>
+        </section>
+        <section class="bg_section">
+            <h2>Time Spent per Milestone:</h2>
+            <div class="table-wrapper">
+                <table><thead><tr><th>Milestone</th><th>Time Spent</th></tr></thead><tbody><tr><td>No milestone</td><td>84h 05m</td></tr><tr><td>MS 1: Initial Project Setup</td><td>55h 30m</td></tr><tr><td>MS 2: Requirements</td><td>52h 00m</td></tr><tr><td>MS 3: End of Elaboration</td><td>78h 00m</td></tr><tr><td>MS 4: Quality</td><td>76h 15m</td></tr><tr><td>MS 5: Architecture</td><td>134h 15m</td></tr><tr><td>MS 6: Alpha</td><td>30h 45m</td></tr><tr><td>MS 7: Beta</td><td>09h 45m</td></tr><tr><td>MS 8: Final Submission</td><td>108h 30m</td></tr><tr><td>MS 9: Project Presentation</td><td>00h 15m</td></tr></tbody></table>
+            </div>
+        </section>
+    </div>
+</main>
+<script>
+    function convertTimestampToLocal() {
+        const timestamp = document.getElementById("timestamp");
+        const old_timestamp = timestamp.textContent;
+        const date = new Date(old_timestamp);
+
+        timestamp.textContent = date.toLocaleString(navigator.languages[0], {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZoneName: 'short'
+        });
+
+        timestamp.style.visibility = "visible";
+    }
+
+    function makeTablesSortable(selector = 'table') {
+        const HM_REGEX = /^(\d+)h\s+(\d{2})m$/;
+
+        function getRawCellValue(row, columnIndex) {
+            const cell = row.children[columnIndex];
+            if (!cell) return "";
+            return (cell.dataset.sortValue || cell.textContent).trim();
+        }
+
+        function toMinutes(raw) {
+            const match = raw.match(HM_REGEX);
+            if (!match) return 0;
+            const hours = parseInt(match[1], 10);
+            const minutes = parseInt(match[2], 10);
+            return hours * 60 + minutes;
+        }
+
+        function detectColumnType(rows, columnIndex) {
+            if (rows.length === 0) return "";
+            return rows.every(row => HM_REGEX.test(getRawCellValue(row, columnIndex)))
+                ? "duration"
+                : "string";
+        }
+
+        document.querySelectorAll(selector).forEach(function (table) {
+            const thead = table.tHead;
+            const tbody = table.tBodies[0];
+            if (!thead || !tbody) return;
+
+            const headers = thead.querySelectorAll('th');
+
+            headers.forEach(function (currentHeader, columnIndex) {
+                currentHeader.setAttribute('aria-sort', 'none');
+
+                currentHeader.addEventListener('click', function () {
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    if (rows.length === 0) return;
+
+                    const columnType = detectColumnType(rows, columnIndex);
+
+                    const currentDirection = currentHeader.dataset.sortDir === 'asc' ? 'desc' : 'asc';
+
+                    // Reset all other headers
+                    headers.forEach(function (header) {
+                        if (header !== currentHeader) {
+                            header.removeAttribute('data-sort-dir');
+                            header.setAttribute('aria-sort', 'none');
+                        }
+                    });
+
+                    currentHeader.dataset.sortDir = currentDirection;
+                    currentHeader.setAttribute(
+                        'aria-sort',
+                        currentDirection === 'asc' ? 'ascending' : 'descending'
+                    );
+
+                    rows.sort(function (rowA, rowB) {
+                        const rawA = getRawCellValue(rowA, columnIndex);
+                        const rawB = getRawCellValue(rowB, columnIndex);
+
+                        if (columnType === "duration") {
+                            const a = toMinutes(rawA);
+                            const b = toMinutes(rawB);
+                            return currentDirection === "asc" ? a - b : b - a;
+                        }
+                        return currentDirection === "asc"
+                            ? rawA.localeCompare(rawB, undefined, {numeric: true})
+                            : rawB.localeCompare(rawA, undefined, {numeric: true});
+                    });
+
+                    // Re-attach rows in sorted order
+                    rows.forEach(function (row) {
+                        tbody.appendChild(row);
+                    });
+                });
+            });
+        });
+    }
+
+    function resizeCharts() {
+        if (!window.echarts) return;
+
+        const charts = document.querySelectorAll('.chart_elem > div');
+        charts.forEach(function (el) {
+            const chart = echarts.getInstanceByDom(el);
+            if (chart) {
+                chart.resize();
+            }
+        });
+    }
+
+    let resizeTimeout;
+    window.addEventListener('resize', function () {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(resizeCharts, 300);
+    });
+
+
+    function setColorTheme(theme) {
+        if (theme) {
+            return theme;
+        }
+        const prefersDarkScheme =
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        return prefersDarkScheme ? 'dark' : '';
+    }
+
+    function getChartBackgroundColor() {
+        return getComputedStyle(document.documentElement)
+            .getPropertyValue('--bg-color-light')
+            .trim();
+    }
+
+    convertTimestampToLocal();
+    makeTablesSortable("table");
+</script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
+<script>
+    (function() {
+
+            const echartsTheme = typeof setColorTheme === 'function' ? setColorTheme('') : '';
+          var chart = echarts.init(document.getElementById('chart-0'), echartsTheme);
+          var option = {
+  "title": [
+    {
+      "text": "Hours spent by Users",
+      "left": "center"
+    }
+  ],
+  "tooltip": {
+    "trigger": "item",
+    "valueFormatter": function(value) { return String(value).concat('h'); }
+  },
+  "legend": {
+    "top": "7%",
+    "width": "80%"
+  },
+  "toolbox": {
+    "feature": {
+      "saveAsImage": {},
+      "restore": {},
+      "dataView": {},
+      "magicType": {
+        "type": [
+          "stack",
+          "line"
+        ]
+      }
+    },
+    "orient": "vertical",
+    "top": "center"
+  },
+  "grid": [
+    {
+      "left": "2%",
+      "top": "20%",
+      "right": "5%",
+      "bottom": "5%",
+      "containLabel": true
+    }
+  ],
+  "xAxis": {
+    "type": "category",
+    "axisLabel": {
+      "rotate": 0.0
+    },
+    "data": [
+      "Users"
+    ]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Hours",
+    "splitNumber": 10.0
+  },
+  "series": [
+    {
+      "type": "bar",
+      "name": "John Carmack",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "136.75"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Will Wright",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "117"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Roberta Williams",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "126.75"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Shigeru Miyamoto",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "128"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "David Wise",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "120.83"
+      ]
+    }
+  ]
+};
+          if (typeof getChartBackgroundColor === 'function') { option.backgroundColor = getChartBackgroundColor(); }
+  chart.setOption(option);
+
+})();
+(function() {
+
+            const echartsTheme = typeof setColorTheme === 'function' ? setColorTheme('') : '';
+          var chart = echarts.init(document.getElementById('chart-1'), echartsTheme);
+          var option = {
+  "title": [
+    {
+      "text": "Burndown Chart per Person",
+      "left": "center"
+    }
+  ],
+  "tooltip": {
+    "trigger": "item",
+    "valueFormatter": function(value) { return String(value).concat('h'); }
+  },
+  "legend": {
+    "top": "7%",
+    "width": "80%"
+  },
+  "toolbox": {
+    "feature": {
+      "saveAsImage": {},
+      "restore": {},
+      "dataView": {},
+      "magicType": {
+        "type": [
+          "bar"
+        ]
+      }
+    },
+    "orient": "vertical",
+    "top": "center"
+  },
+  "grid": [
+    {
+      "left": "2%",
+      "top": "20%",
+      "right": "5%",
+      "bottom": "5%",
+      "containLabel": true
+    }
+  ],
+  "xAxis": {
+    "type": "category",
+    "axisLabel": {
+      "rotate": 0.0
+    },
+    "data": [
+      "Start",
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6",
+      "S7"
+    ]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Hours",
+    "splitNumber": 10.0
+  },
+  "series": [
+    {
+      "type": "line",
+      "name": "John Carmack",
+      "symbolSize": 8.0,
+      "data": [
+        "120",
+        "104.5",
+        "92.25",
+        "74.75",
+        "43.25",
+        "19.5",
+        "0",
+        "-8.75"
+      ]
+    },
+    {
+      "type": "line",
+      "name": "Will Wright",
+      "symbolSize": 8.0,
+      "data": [
+        "120",
+        "110.5",
+        "98.75",
+        "85",
+        "55.75",
+        "43.75",
+        "35.25",
+        "9.5"
+      ]
+    },
+    {
+      "type": "line",
+      "name": "Roberta Williams",
+      "symbolSize": 8.0,
+      "data": [
+        "120",
+        "103.5",
+        "93.75",
+        "74",
+        "46",
+        "22.75",
+        "16.5",
+        "-2.25"
+      ]
+    },
+    {
+      "type": "line",
+      "name": "Shigeru Miyamoto",
+      "symbolSize": 8.0,
+      "data": [
+        "120",
+        "105",
+        "88",
+        "66",
+        "31.75",
+        "26.25",
+        "14.25",
+        "4"
+      ]
+    },
+    {
+      "type": "line",
+      "name": "David Wise",
+      "symbolSize": 8.0,
+      "data": [
+        "120",
+        "105",
+        "82.75",
+        "67",
+        "40.25",
+        "18.75",
+        "8.75",
+        "5.67"
+      ]
+    },
+    {
+      "type": "line",
+      "name": "Ideal",
+      "symbolSize": 8.0,
+      "data": [
+        "120",
+        "102.86",
+        "85.71",
+        "68.57",
+        "51.43",
+        "34.29",
+        "17.14",
+        "0"
+      ]
+    }
+  ]
+};
+          if (typeof getChartBackgroundColor === 'function') { option.backgroundColor = getChartBackgroundColor(); }
+  chart.setOption(option);
+
+})();
+(function() {
+
+            const echartsTheme = typeof setColorTheme === 'function' ? setColorTheme('') : '';
+          var chart = echarts.init(document.getElementById('chart-2'), echartsTheme);
+          var option = {
+  "title": [
+    {
+      "text": "Burndown Chart Total",
+      "left": "center"
+    }
+  ],
+  "tooltip": {
+    "trigger": "item",
+    "valueFormatter": function(value) { return String(value).concat('h'); }
+  },
+  "legend": {
+    "top": "7%",
+    "width": "80%"
+  },
+  "toolbox": {
+    "feature": {
+      "saveAsImage": {},
+      "restore": {},
+      "dataView": {},
+      "magicType": {
+        "type": [
+          "bar"
+        ]
+      }
+    },
+    "orient": "vertical",
+    "top": "center"
+  },
+  "grid": [
+    {
+      "left": "2%",
+      "top": "20%",
+      "right": "5%",
+      "bottom": "5%",
+      "containLabel": true
+    }
+  ],
+  "xAxis": {
+    "type": "category",
+    "axisLabel": {
+      "rotate": 0.0
+    },
+    "data": [
+      "Start",
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6",
+      "S7"
+    ]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Hours",
+    "splitNumber": 10.0
+  },
+  "series": [
+    {
+      "type": "line",
+      "name": "Total",
+      "symbolSize": 8.0,
+      "data": [
+        "600",
+        "528.5",
+        "455.5",
+        "366.75",
+        "217",
+        "131",
+        "74.75",
+        "8.17"
+      ]
+    },
+    {
+      "type": "line",
+      "name": "Ideal",
+      "symbolSize": 8.0,
+      "data": [
+        "600",
+        "514.29",
+        "428.57",
+        "342.86",
+        "257.14",
+        "171.43",
+        "85.71",
+        "0"
+      ]
+    }
+  ]
+};
+          if (typeof getChartBackgroundColor === 'function') { option.backgroundColor = getChartBackgroundColor(); }
+  chart.setOption(option);
+
+})();
+(function() {
+
+            const echartsTheme = typeof setColorTheme === 'function' ? setColorTheme('') : '';
+          var chart = echarts.init(document.getElementById('chart-3'), echartsTheme);
+          var option = {
+  "title": [
+    {
+      "text": "Hours spent by Milestones",
+      "left": "center"
+    }
+  ],
+  "tooltip": {
+    "trigger": "item",
+    "valueFormatter": function(value) { return String(value).concat('h'); }
+  },
+  "legend": {
+    "top": "7%",
+    "width": "80%"
+  },
+  "toolbox": {
+    "feature": {
+      "saveAsImage": {},
+      "restore": {},
+      "dataView": {},
+      "magicType": {
+        "type": [
+          "stack",
+          "line"
+        ]
+      }
+    },
+    "orient": "vertical",
+    "top": "center"
+  },
+  "grid": [
+    {
+      "left": "2%",
+      "top": "20%",
+      "right": "5%",
+      "bottom": "5%",
+      "containLabel": true
+    }
+  ],
+  "xAxis": {
+    "type": "category",
+    "axisLabel": {
+      "rotate": 0.0
+    },
+    "data": [
+      "Milestones"
+    ]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Hours",
+    "splitNumber": 10.0
+  },
+  "series": [
+    {
+      "type": "bar",
+      "name": "None",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "84.08"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "MS 1: Initial Project Setup",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "55.5"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "MS 2: Requirements",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "52"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "MS 3: End of Elaboration",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "78"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "MS 4: Quality",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "76.25"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "MS 5: Architecture",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "134.25"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "MS 6: Alpha",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "30.75"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "MS 7: Beta",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "9.75"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "MS 8: Final Submission",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "108.5"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "MS 9: Project Presentation",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "0.25"
+      ]
+    }
+  ]
+};
+          if (typeof getChartBackgroundColor === 'function') { option.backgroundColor = getChartBackgroundColor(); }
+  chart.setOption(option);
+
+})();
+(function() {
+
+            const echartsTheme = typeof setColorTheme === 'function' ? setColorTheme('') : '';
+          var chart = echarts.init(document.getElementById('chart-4'), echartsTheme);
+          var option = {
+  "title": [
+    {
+      "text": "Hours spent by Labels",
+      "left": "center"
+    }
+  ],
+  "tooltip": {
+    "trigger": "item",
+    "valueFormatter": function(value) { return String(value).concat('h'); }
+  },
+  "toolbox": {
+    "feature": {
+      "saveAsImage": {},
+      "dataView": {}
+    },
+    "orient": "vertical",
+    "top": "center"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "label": {
+        "formatter": "{b}\n{c}h"
+      },
+      "radius": "70%",
+      "data": [
+        {
+          "value": "21.5",
+          "name": "Architecture"
+        },
+        {
+          "value": "89.75",
+          "name": "Backend"
+        },
+        {
+          "value": "39.25",
+          "name": "BusinessModelling"
+        },
+        {
+          "value": "38.75",
+          "name": "CI/CD"
+        },
+        {
+          "value": "108.75",
+          "name": "Documentation"
+        },
+        {
+          "value": "42",
+          "name": "Frontend"
+        },
+        {
+          "value": "107",
+          "name": "Meeting"
+        },
+        {
+          "value": "273.08",
+          "name": "Others"
+        }
+      ]
+    }
+  ]
+};
+          if (typeof getChartBackgroundColor === 'function') { option.backgroundColor = getChartBackgroundColor(); }
+  chart.setOption(option);
+
+})();
+(function() {
+
+            const echartsTheme = typeof setColorTheme === 'function' ? setColorTheme('') : '';
+          var chart = echarts.init(document.getElementById('chart-5'), echartsTheme);
+          var option = {
+  "title": [
+    {
+      "text": "Hours spent by Label and User",
+      "left": "center"
+    }
+  ],
+  "tooltip": {
+    "trigger": "item",
+    "valueFormatter": function(value) { return String(value).concat('h'); }
+  },
+  "legend": {
+    "top": "7%",
+    "width": "80%"
+  },
+  "toolbox": {
+    "feature": {
+      "saveAsImage": {},
+      "restore": {},
+      "dataView": {},
+      "magicType": {
+        "type": [
+          "stack",
+          "line"
+        ]
+      }
+    },
+    "orient": "vertical",
+    "top": "center"
+  },
+  "grid": [
+    {
+      "left": "2%",
+      "top": "20%",
+      "right": "5%",
+      "bottom": "5%",
+      "containLabel": true
+    }
+  ],
+  "xAxis": {
+    "type": "category",
+    "axisLabel": {
+      "rotate": 50.0
+    },
+    "data": [
+      "Architecture",
+      "Backend",
+      "BusinessModelling",
+      "CI/CD",
+      "Documentation",
+      "Frontend",
+      "Meeting",
+      "Others"
+    ]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Hours",
+    "splitNumber": 10.0
+  },
+  "series": [
+    {
+      "type": "bar",
+      "name": "John Carmack",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "1.75",
+        "4",
+        "1.75",
+        "7.75",
+        "27.25",
+        "5",
+        "21.75",
+        "76"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Will Wright",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "3",
+        "12.25",
+        "7.5",
+        "3",
+        "17.25",
+        "6",
+        "22.25",
+        "58"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Roberta Williams",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "0",
+        "3",
+        "5.5",
+        "0",
+        "14",
+        "8",
+        "22.25",
+        "80.25"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Shigeru Miyamoto",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "15.75",
+        "26.75",
+        "17.5",
+        "28",
+        "33.25",
+        "10.5",
+        "20.5",
+        "30.5"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "David Wise",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "1",
+        "43.75",
+        "7",
+        "0",
+        "17",
+        "12.5",
+        "20.25",
+        "28.33"
+      ]
+    }
+  ]
+};
+          if (typeof getChartBackgroundColor === 'function') { option.backgroundColor = getChartBackgroundColor(); }
+  chart.setOption(option);
+
+})();
+(function() {
+
+            const echartsTheme = typeof setColorTheme === 'function' ? setColorTheme('') : '';
+          var chart = echarts.init(document.getElementById('chart-6'), echartsTheme);
+          var option = {
+  "title": [
+    {
+      "text": "Estimates and actual time per Label",
+      "left": "center"
+    }
+  ],
+  "tooltip": {
+    "trigger": "item",
+    "valueFormatter": function(value) { return String(value).concat('h'); }
+  },
+  "legend": {
+    "top": "7%",
+    "width": "80%"
+  },
+  "toolbox": {
+    "feature": {
+      "saveAsImage": {},
+      "restore": {},
+      "dataView": {},
+      "magicType": {
+        "type": [
+          "stack",
+          "line"
+        ]
+      }
+    },
+    "orient": "vertical",
+    "top": "center"
+  },
+  "grid": [
+    {
+      "left": "2%",
+      "top": "20%",
+      "right": "5%",
+      "bottom": "5%",
+      "containLabel": true
+    }
+  ],
+  "xAxis": {
+    "type": "category",
+    "axisLabel": {
+      "rotate": 50.0
+    },
+    "data": [
+      "Architecture",
+      "Backend",
+      "BusinessModelling",
+      "CI/CD",
+      "Documentation",
+      "Frontend",
+      "Meeting",
+      "Others"
+    ]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Hours",
+    "splitNumber": 10.0
+  },
+  "series": [
+    {
+      "type": "bar",
+      "name": "Estimates",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "26",
+        "62.25",
+        "46",
+        "40.5",
+        "137.5",
+        "44",
+        "130",
+        "190.5"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Actual Time",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "21.5",
+        "89.75",
+        "39.25",
+        "38.75",
+        "108.75",
+        "42",
+        "107",
+        "273.08"
+      ]
+    }
+  ]
+};
+          if (typeof getChartBackgroundColor === 'function') { option.backgroundColor = getChartBackgroundColor(); }
+  chart.setOption(option);
+
+})();
+(function() {
+
+            const echartsTheme = typeof setColorTheme === 'function' ? setColorTheme('') : '';
+          var chart = echarts.init(document.getElementById('chart-7'), echartsTheme);
+          var option = {
+  "title": [
+    {
+      "text": "Hours spent by Issue or Merge Request",
+      "left": "center"
+    }
+  ],
+  "tooltip": {
+    "trigger": "item",
+    "valueFormatter": function(value) { return String(value).concat('h'); }
+  },
+  "toolbox": {
+    "feature": {
+      "saveAsImage": {},
+      "dataView": {}
+    },
+    "orient": "vertical",
+    "top": "center"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "label": {
+        "formatter": "{b}\n{c}h"
+      },
+      "radius": "70%",
+      "data": [
+        {
+          "value": "384.33",
+          "name": "Issue"
+        },
+        {
+          "value": "245",
+          "name": "Merge Request"
+        }
+      ]
+    }
+  ]
+};
+          if (typeof getChartBackgroundColor === 'function') { option.backgroundColor = getChartBackgroundColor(); }
+  chart.setOption(option);
+
+})();
+(function() {
+
+            const echartsTheme = typeof setColorTheme === 'function' ? setColorTheme('') : '';
+          var chart = echarts.init(document.getElementById('chart-8'), echartsTheme);
+          var option = {
+  "title": [
+    {
+      "text": "Hours spent by Issue or Merge Request and User",
+      "left": "center"
+    }
+  ],
+  "tooltip": {
+    "trigger": "item",
+    "valueFormatter": function(value) { return String(value).concat('h'); }
+  },
+  "legend": {
+    "top": "7%",
+    "width": "80%"
+  },
+  "toolbox": {
+    "feature": {
+      "saveAsImage": {},
+      "restore": {},
+      "dataView": {},
+      "magicType": {
+        "type": [
+          "stack",
+          "line"
+        ]
+      }
+    },
+    "orient": "vertical",
+    "top": "center"
+  },
+  "grid": [
+    {
+      "left": "2%",
+      "top": "20%",
+      "right": "5%",
+      "bottom": "5%",
+      "containLabel": true
+    }
+  ],
+  "xAxis": {
+    "type": "category",
+    "axisLabel": {
+      "rotate": 0.0
+    },
+    "data": [
+      "Issue",
+      "Merge Request"
+    ]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Hours",
+    "splitNumber": 10.0
+  },
+  "series": [
+    {
+      "type": "bar",
+      "name": "John Carmack",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "41.5",
+        "95.25"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Will Wright",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "81.25",
+        "35.75"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Roberta Williams",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "73.75",
+        "53"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Shigeru Miyamoto",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "100.5",
+        "27.5"
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "David Wise",
+      "label": {
+        "show": true
+      },
+      "data": [
+        "51.58",
+        "69.25"
+      ]
+    }
+  ]
+};
+          if (typeof getChartBackgroundColor === 'function') { option.backgroundColor = getChartBackgroundColor(); }
+  chart.setOption(option);
+
+})();
+</script>
+</body>
+</html>
