@@ -67,7 +67,10 @@ impl MultiSeries for series::Bar {
         series::Bar::new()
             .name(key)
             .data(data)
-            .label(element::Label::new().show(true))
+            .label(element::Label::new()
+                .show(true)
+                .position(element::LabelPosition::Top)
+            )
     }
 }
 
