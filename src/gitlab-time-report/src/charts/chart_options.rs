@@ -20,6 +20,9 @@ pub struct RenderOptions<'a> {
     /// Counter that will be added to the file name.
     /// Used to determine the order in which the charts will be added to the dashboard.
     pub(super) file_name_prefix: u8,
+    /// The name of the repository. Will be added to the file name to disambiguate charts
+    /// from different repos.
+    pub(super) repository_name: String,
 }
 
 impl<'a> RenderOptions<'a> {
@@ -31,6 +34,7 @@ impl<'a> RenderOptions<'a> {
         height: u16,
         theme_file_path: Option<&'a Path>,
         output_path: &'a Path,
+        repository_name: &'a str,
     ) -> Result<Self, ChartSettingError> {
         if let Some(path) = &theme_file_path
             && !path.exists()
@@ -44,6 +48,7 @@ impl<'a> RenderOptions<'a> {
             theme_file_path,
             output_path,
             file_name_prefix: 1,
+            repository_name: repository_name.replace(' ', "-").to_lowercase(),
         })
     }
 }
@@ -175,37 +180,65 @@ mod tests {
 
     const WIDTH: u16 = 600;
     const HEIGHT: u16 = 600;
+    const REPOSITORY_NAME_INPUT: &str = "Sample Repository";
+    const REPOSITORY_NAME_OUTPUT: &str = "sample-repository";
 
     #[test]
     fn renderoptions_new_returns_ok_with_theme_path_set() {
         let tmp = tempfile::NamedTempFile::new().unwrap();
         let theme_path = tmp.path();
         let output_path = Path::new("docs/charts/");
-        let chart_options = RenderOptions::new(WIDTH, HEIGHT, Some(theme_path), output_path);
+        let chart_options = RenderOptions::new(
+            WIDTH,
+            HEIGHT,
+            Some(theme_path),
+            output_path,
+            REPOSITORY_NAME_INPUT,
+        );
         let result = chart_options;
         assert!(result.is_ok());
         let render_options = result.unwrap();
+
+        assert_eq!(render_options.width, WIDTH);
+        assert_eq!(render_options.height, HEIGHT);
         assert_eq!(render_options.theme_file_path, Some(theme_path));
         assert_eq!(render_options.output_path, output_path);
+        assert_eq!(render_options.repository_name, REPOSITORY_NAME_OUTPUT);
     }
 
     #[test]
     fn renderoptions_new_returns_ok_with_no_theme_path_set() {
         let theme_path = None;
         let output_path = Path::new("docs/charts/");
-        let chart_options = RenderOptions::new(WIDTH, HEIGHT, theme_path, output_path);
+        let chart_options = RenderOptions::new(
+            WIDTH,
+            HEIGHT,
+            theme_path,
+            output_path,
+            REPOSITORY_NAME_INPUT,
+        );
         let result = chart_options;
         assert!(result.is_ok());
         let render_options = result.unwrap();
+
+        assert_eq!(render_options.width, WIDTH);
+        assert_eq!(render_options.height, HEIGHT);
         assert_eq!(render_options.theme_file_path, None);
         assert_eq!(render_options.output_path, output_path);
+        assert_eq!(render_options.repository_name, REPOSITORY_NAME_OUTPUT);
     }
 
     #[test]
     fn renderoptions_new_returns_err_with_invalid_path() {
         let theme_path = Path::new("invalidfile");
         let output_path = Path::new("charts");
-        let chart_options = RenderOptions::new(WIDTH, HEIGHT, Some(theme_path), output_path);
+        let chart_options = RenderOptions::new(
+            WIDTH,
+            HEIGHT,
+            Some(theme_path),
+            output_path,
+            REPOSITORY_NAME_INPUT,
+        );
         let result = chart_options;
         assert!(result.is_err());
         assert!(matches!(result, Err(ChartSettingError::FileNotFound)));

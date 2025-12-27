@@ -46,6 +46,7 @@ fn main() -> Result<(), String> {
                 chart_options,
                 selected_labels.as_ref(),
                 other_label.as_ref(),
+                &project.name,
             )
             .map_err(|e| e.to_string())?;
         }
@@ -56,6 +57,7 @@ fn main() -> Result<(), String> {
                 chart_options,
                 selected_labels.as_ref(),
                 other_label.as_ref(),
+                &project.name,
             )
             .map_err(|e| e.to_string())?;
 
@@ -196,6 +198,7 @@ pub(crate) fn create_charts(
     options: &arguments::ChartOptionsArgs,
     selected_labels: Option<&HashSet<String>>,
     other_label: Option<&Label>,
+    repository_name: &str,
 ) -> Result<(), ChartSettingError> {
     let burndown_options = charts::BurndownOptions::new(
         time_logs,
@@ -209,6 +212,7 @@ pub(crate) fn create_charts(
         options.height,
         options.theme_json.as_deref(),
         &options.output,
+        repository_name,
     )?;
 
     println!("Creating Bar Chart for Hours spent by Users...");

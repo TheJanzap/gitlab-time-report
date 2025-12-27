@@ -269,8 +269,9 @@ fn render_chart_with_settings(
     }
 
     let chart_filename = format!(
-        "{prefix:02}-{name}",
+        "{prefix:02}_{repository}_{name}",
         prefix = render_options.file_name_prefix,
+        repository = render_options.repository_name,
         name = chart_name.replace(' ', "-").to_lowercase()
     );
 
