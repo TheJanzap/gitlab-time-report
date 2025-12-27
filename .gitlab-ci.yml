@@ -71,9 +71,9 @@ stages:
     # On feature branches, run on MRs and only when files in 'src' or root Cargo files change
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
-          - src/**/*
-          - Cargo.lock
-          - Cargo.toml
+        - src/**/*
+        - Cargo.lock
+        - Cargo.toml
 
 # Template for building Rust for different OS/architectures
 .rust-build-release-template:
@@ -245,8 +245,8 @@ doc:gitlab-time-report:
     # Generate dashboard, which also generates charts
     - ./$BINARY_NAME $CI_PROJECT_URL --token $PROJECT_TOKEN dashboard
   artifacts:
-      paths:
-        - dashboard.html
+    paths:
+      - dashboard.html
   rules:
     # Always run on the main branch
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -336,4 +336,12 @@ release:create:
           link_type: image
   rules:
     # Run if a new Git tag is created
+    - if: $CI_COMMIT_TAG
+
+# Uploads the new release to crates.io
+release:crates.io:
+  stage: release
+  extends: .rust-template
+  script: cargo publish --workspace
+  rules:
     - if: $CI_COMMIT_TAG
