@@ -11,7 +11,7 @@ To see a full list of features, run the program with the `--help` argument.
 
 ## Installation
 
-You can download the latest release build from the releases section. We currently offer builds for:
+You can download the latest release build from the [GitLab Releases]. We currently offer builds for:
 
 - [Windows (x64)][Windows x86_64]
 - [macOS (Intel-based)][MacOS x86_64]
@@ -23,12 +23,13 @@ compile it yourself, as we can't currently provide builds for it due to a lack o
 Alternatively, if you have a Rust toolchain installed, you can install it via Cargo. This works on all platforms.
 
 ```sh
-cargo install --git https://gitlab.com/gitlab-time-report/gitlab-time-report
+cargo install gitlab-time-report-cli
 ```
 
 ## Basic Usage (Print Statistics)
 
-Enter some spent time on your repository by clicking on the "+" next to "Time tracking" in the right sidebar on any Issue or Merge Request.
+Enter some spent time on your repository by clicking on the "+" next to "Time tracking" in the right sidebar on any
+Issue or Merge Request.
 For more information about how to use time tracking, see the [GitLab Time Tracking docs].
 
 Run GitLab Time-Report with the URL of your GitLab repository. This will print various tables with statistics about the
@@ -39,7 +40,8 @@ gitlab-time-report-cli https://gitlab.com/username/my-repo
 ```
 
 Note that if the visibility of the repository is set to "internal" or "private", a GitLab access token is required.
-A [personal][Personal access token], [group][Group access token] or [project access token] with the `read_api` permission can be used.
+A [personal][Personal access token], [group][Group access token] or [project access token] with the `read_api`
+permission can be used.
 
 ```sh
 gitlab-time-report-cli https://gitlab.com/username/my-private-repo --token myAccessToken
@@ -70,7 +72,7 @@ gitlab-time-report-cli https://gitlab.com/username/my-repo --token myAccessToken
 
 By default, the charts look like this:
 
-![charts preview](docs/images/charts.png)
+![Four charts created by GitLab Time-Report: Hours per person, Burndown per person, Hours per milestone and Hours by labels](docs/images/charts.png)
 
 If you would like to change the design of the charts, you can go to the [Apache Echarts Theme Builder Page] and select
 a theme or create your own. You can then download it as a JSON File. Use the `--theme-json` flag and specify the path
@@ -92,7 +94,7 @@ gitlab-time-report-cli https://gitlab.com/username/my-repo dashboard --sprints 7
 The dashboard is displayed in light or dark mode according to your settings. If you have chosen your own theme, the
 charts may not be visible perfectly if you use a dark mode theme in light mode or vice versa.
 
-![charts preview](docs/images/dashboard.png)
+![Overview of the dashboard in light and dark mode](docs/images/dashboard.png)
 
 Disclaimer: The dashboards in the screenshots above have themes applied to them.
 
@@ -107,9 +109,9 @@ gitlab-time-report-cli https://gitlab.com/username/my-repo export
 
 ## Exclude Labels
 
-If you have many labels on GitLab, you may want to exclude some of them. With `--labels`, you can specify what labels should be
-included in your charts and tables. Any labels not in this list will be grouped under "Others". Note that the names of the labels
-are case-sensitive.
+If you have many labels on GitLab, you may want to exclude some of them. With `--labels`, you can specify what labels
+should be included in your charts and tables. Any labels not in this list will be grouped under "Others".
+Note that the names of the labels are case-sensitive.
 
 ```sh
 gitlab-time-report-cli https://gitlab.com/username/my-repo --labels Documentation,"Epic 1" <SUBCOMMANDS>
@@ -118,7 +120,8 @@ gitlab-time-report-cli https://gitlab.com/username/my-repo --labels Documentatio
 ## Validation
 
 GitLab Time-Report also includes a validation for your time logs. By default, only the number of detected problems is
-printed to your console. No automatic correction is performed. To get a detailed report, run with `--validation-details`.
+printed to your console. No automatic correction is performed. To get a detailed report, run with
+`--validation-details`.
 
 The validated properties are:
 
@@ -131,8 +134,9 @@ The validated properties are:
 ## Integration into GitLab CI/CD Pipeline
 
 It is also possible to use GitLab Time-Report inside your pipeline. Here is a simple config that hosts the dashboard on
-GitLab Pages. First, create a project access token and create a [CI/CD variable] named `GITLAB_TOKEN`. Make sure to untick
-"Protect Variable" if you want to run the job on other branches except `main`. Then, add the following to your `.gitlab-ci.yml`:
+GitLab Pages. First, create a project access token and create a [CI/CD variable] named `GITLAB_TOKEN`. Make sure to
+untick "Protect Variable" if you want to run the job on other branches except `main`. Then, add the following to your
+`.gitlab-ci.yml`:
 
 ```yml
 gitlab-time-report:
@@ -165,7 +169,7 @@ pages:
 
 If you use Typst for the documentation of your project, here is a configuration to automatically include SVGs into
 your document. To compile Typst locally, you can use the provided [placeholder images]. Place them into your document
-with the same name as the chart SVGs. The pipeline below will then override them, if the path is set correctly.
+with the same name as the chart SVGs. The pipeline below will then override them if the path is set correctly.
 
 ```yml
 gitlab-time-report:
@@ -226,7 +230,7 @@ Typst code.
 If you encounter any problems when using the application, please create an issue and we will take a look at it when we
 have the time. Like to implement something yourself? Simply create a Merge Request for us to review.
 
-If you're new to Rust, we have a short [Rust Beginners Guide] (in German) to get you up to speed with the Rust Basics
+If you're new to Rust, we have a short [Rust Beginner's Guide] (in German) to get you up to speed with the Rust Basics
 if you're already familiar with other programming languages.
 
 # Background
@@ -271,6 +275,8 @@ details.
 
 [Example dashboard]: https://gitlab-time-report-1c2e47.gitlab.io/dashboard-sample.html
 
+[GitLab Releases]: https://gitlab.com/gitlab-time-report/gitlab-time-report/-/releases/permalink/latest
+
 [Windows x86_64]: https://gitlab.com/gitlab-time-report/gitlab-time-report/-/releases/permalink/latest/downloads/gitlab-time-report-cli-windows-x86_64.exe
 
 [MacOS x86_64]: https://gitlab.com/gitlab-time-report/gitlab-time-report/-/releases/permalink/latest/downloads/gitlab-time-report-cli-macos-x86_64
@@ -279,7 +285,7 @@ details.
 
 [Placeholder images]: docs/placeholder_images
 
-[Rust Beginners Guide]: docs/Eine_Einführung_in_Rust.pdf
+[Rust Beginner's Guide]: docs/Eine_Einführung_in_Rust.pdf
 
 [Apache Echarts]: https://github.com/apache/echarts
 
