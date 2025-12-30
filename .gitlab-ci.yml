@@ -6,6 +6,7 @@ variables:
   PACKAGE_REGISTRY_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/gitlab-time-report/$CI_COMMIT_TAG"
   RELEASE_BIN_LINUX: "gitlab-time-report-cli-linux-x86_64-gnu"
   RELEASE_BIN_WINDOWS: "gitlab-time-report-cli-windows-x86_64.exe"
+  RELEASE_BIN_MACOS: "gitlab-time-report-cli-macos-x86_64"
 
 stages:
   # Builds all the Rust binaries
@@ -140,6 +141,16 @@ build:linux:
   variables:
     # Linux x64 with glibc
     TARGET: x86_64-unknown-linux-gnu
+  artifacts:
+    paths:
+      - target/$TARGET/release/$BINARY_NAME
+
+build:macos:
+  tags: [ macos ]
+  extends: .rust-build-release-template
+  variables:
+    # Intel-based macOS
+    TARGET: x86_64-apple-darwin
   artifacts:
     paths:
       - target/$TARGET/release/$BINARY_NAME
@@ -308,6 +319,9 @@ release:upload:
     - |
       curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file target/x86_64-pc-windows-msvc/release/$BINARY_NAME.exe \
         $PACKAGE_REGISTRY_URL/$RELEASE_BIN_WINDOWS
+    - |
+      curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file target/x86_64-apple-darwin/release/$BINARY_NAME \
+        $PACKAGE_REGISTRY_URL/$RELEASE_BIN_MACOS
   rules:
     # Run if a new Git tag is created
     - if: $CI_COMMIT_TAG
@@ -333,6 +347,10 @@ release:create:
         - name: "$RELEASE_BIN_WINDOWS"
           url: "$PACKAGE_REGISTRY_URL/$RELEASE_BIN_WINDOWS"
           filepath: "/$RELEASE_BIN_WINDOWS"
+          link_type: image
+        - name: "$RELEASE_BIN_MACOS"
+          url: "$PACKAGE_REGISTRY_URL/$RELEASE_BIN_MACOS"
+          filepath: "/$RELEASE_BIN_MACOS"
           link_type: image
   rules:
     # Run if a new Git tag is created

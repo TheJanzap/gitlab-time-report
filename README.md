@@ -11,9 +11,16 @@ To see a full list of features, run the program with the `--help` argument.
 
 ## Installation
 
-You can download the latest release build from the releases section.
+You can download the latest release build from the releases section. We currently offer builds for:
 
-Alternatively, if you have a Rust toolchain installed, you can install it via Cargo.
+- [Windows (x64)][Windows x86_64]
+- [macOS (Intel-based)][MacOS x86_64]
+- [Linux (x64, glibc-based distributions)][Linux x86_64 GNU] (sorry Alpine Linux users!)
+
+If you are on an ARM-based macOS device, you may need to install [Rosetta 2]. If you want a native build, you need to
+compile it yourself, as we can't currently provide builds for it due to a lack of hardware.
+
+Alternatively, if you have a Rust toolchain installed, you can install it via Cargo. This works on all platforms.
 
 ```sh
 cargo install --git https://gitlab.com/gitlab-time-report/gitlab-time-report
@@ -264,6 +271,12 @@ details.
 
 [Example dashboard]: https://gitlab-time-report-1c2e47.gitlab.io/dashboard-sample.html
 
+[Windows x86_64]: https://gitlab.com/gitlab-time-report/gitlab-time-report/-/releases/permalink/latest/downloads/gitlab-time-report-cli-windows-x86_64.exe
+
+[MacOS x86_64]: https://gitlab.com/gitlab-time-report/gitlab-time-report/-/releases/permalink/latest/downloads/gitlab-time-report-cli-macos-x86_64
+
+[Linux x86_64 GNU]: https://gitlab.com/gitlab-time-report/gitlab-time-report/-/releases/permalink/latest/downloads/gitlab-time-report-cli-linux-x86_64-gnu
+
 [Placeholder images]: docs/placeholder_images
 
 [Rust Beginners Guide]: docs/Eine_Einführung_in_Rust.pdf
@@ -281,3 +294,5 @@ details.
 [Project access token]: https://docs.gitlab.com/user/project/settings/project_access_tokens/
 
 [CI/CD variable]: https://docs.gitlab.com/ci/variables/#for-a-project
+
+[Rosetta 2]: https://support.apple.com/en-us/102527
