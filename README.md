@@ -150,6 +150,9 @@ gitlab-time-report:
     - chmod +x gitlab-time-report-cli
     # Creates the dashboard. Make sure to create the GITLAB_TOKEN variable in your repository settings
     - ./gitlab-time-report-cli $CI_PROJECT_URL dashboard --sprints 5 --weeks-per-sprint 3 --hours-per-person 360
+  artifacts:
+    paths:
+      - dashboard.html
 
 pages:
   needs: [ "gitlab-time-report" ]
@@ -183,6 +186,10 @@ gitlab-time-report:
     - chmod +x gitlab-time-report-cli
     # Creates the dashboard. Make sure to create the GITLAB_TOKEN variable in your repository settings
     - ./gitlab-time-report-cli $CI_PROJECT_URL dashboard --sprints 5 --weeks-per-sprint 3 --hours-per-person 360
+  artifacts:
+    paths:
+      - charts
+      - dashboard.html
 
 documentation:
   image:
