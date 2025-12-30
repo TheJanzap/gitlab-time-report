@@ -7,7 +7,7 @@ use std::path::PathBuf;
 const BEFORE_HELP: &str = "\n
 gitlab-time-report exports time logs from Issues and Merge Requests of a GitLab repository \
 to create statistics and charts of your working hours. Use --help on commands to get more information. \
-If no subcommands are used, statistics will be printed directly to your console.";
+If no subcommand is used, statistics will be printed directly to your console.";
 
 const AFTER_HELP: &str = "By default, validation of time logs is enabled. \
 It checks for excessive hours, future dates, duplicate time logs and missing summaries.
@@ -23,7 +23,7 @@ pub(super) struct Arguments {
     pub(super) url: String,
 
     /// A GitLab access token. Needed if the repository is not public.
-    /// Can be a personal, group or repository access token.
+    /// Can be a personal, group, or repository access token.
     #[arg(short, long, env = "GITLAB_TOKEN")]
     pub(super) token: Option<String>,
 
@@ -38,10 +38,11 @@ pub(super) struct Arguments {
     #[arg(long)]
     pub(super) validation_details: bool,
 
-    /// When validating time logs, the maximum number of hours a time log can have.
+    /// When validating time logs, the maximum number of hours a time log should have.
     #[arg(long, default_value = "10")]
     pub(super) validation_max_hours: u16,
 
+    /// The subcommand to run.
     #[command(subcommand)]
     pub(super) command: Option<Command>,
 }
@@ -55,8 +56,9 @@ pub(super) enum Command {
         #[arg(short, long, default_value = "timelogs.csv")]
         output: PathBuf,
     },
-    /// Generate charts from your time logs. This function creates the following charts:
-    /// Time spent per user, per milestone, per user/label and burndown charts (total and per user).
+    /// Generate charts from your time logs as HTML and SVG. Creates the following charts:
+    /// Time spent per user, per milestone, per label, per user/label, per type (issue or MR),
+    /// per type/user, estimates/actual time per label and burndown charts (total and per user).
     Charts {
         #[command(flatten)]
         chart_options: ChartOptionsArgs,
@@ -86,7 +88,8 @@ pub(super) struct ChartOptionsArgs {
     #[arg(long, value_name = "PATH_TO_THEME_JSON", env)]
     pub(super) theme_json: Option<PathBuf>,
 
-    /// The path the charts will be written to.
+    /// The path the charts will be written to. If not set, a "charts" directory will be created in
+    /// the current working directory.
     #[arg(short, long, default_value = "charts")]
     pub(super) output: PathBuf,
 
@@ -95,16 +98,16 @@ pub(super) struct ChartOptionsArgs {
     #[arg(long, value_name = "NUMBER_OF_SPRINTS", env)]
     pub(super) sprints: u16,
 
-    /// The number of weeks each sprint lasts. Required for the burndown chart.
+    /// The number of weeks each sprint lasts. Required for the burndown charts.
     #[arg(long, env)]
     pub(super) weeks_per_sprint: u16,
 
-    /// The number of hours a person is expected to work in total. Required for the burndown chart.
+    /// The number of hours a person is expected to work in total. Required for the burndown charts.
     #[arg(long, env)]
     pub(super) hours_per_person: f32,
 
     /// The start date of the burndown chart.
-    /// If not set, the date of the earliest time entry is used.
+    /// If not set, the date of the earliest time log is used.
     #[arg(long, value_name = "YYYY-MM-DD")]
     pub(super) start_date: Option<NaiveDate>,
 
