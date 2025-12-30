@@ -311,7 +311,7 @@ dummy-merge-request-job:
 release:upload:
   stage: release
   image: curlimages/curl:latest
-  needs: [ "build:windows", "build:linux" ]
+  needs: [ "build:windows", "build:linux", "build:macos" ]
   script:
     - |
       curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file target/x86_64-unknown-linux-gnu/release/$BINARY_NAME \
