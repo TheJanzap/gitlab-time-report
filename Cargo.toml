@@ -6,6 +6,7 @@ default-members = ["src/gitlab-time-report-cli"]
 [workspace.package]
 version = "1.1.0"
 edition = "2024"
+rust-version = "1.88"
 license = "GPL-3.0-or-later"
 repository = "https://gitlab.com/gitlab-time-report/gitlab-time-report"
 keywords = ["gitlab", "project-management", "time-tracking"]
@@ -13,7 +14,7 @@ categories = ["command-line-utilities", "visualization"]
 
 [workspace.dependencies]
 gitlab-time-report = { path = "src/gitlab-time-report", version = "1.1.0" }
-chrono = { version = "0.4.42", default-features = false }
+chrono = { version = "0.4.43", default-features = false }
 
 [workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tarpaulin_include)', 'cfg(tarpaulin)'] }
