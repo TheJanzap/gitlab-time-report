@@ -3,6 +3,7 @@
 
 #![cfg(not(tarpaulin_include))]
 mod arguments;
+mod fetch_projects;
 mod print_table;
 
 use arguments::Command;
@@ -10,15 +11,16 @@ use chrono::NaiveDate;
 use clap::Parser;
 use gitlab_time_report::charts::{BurndownType, ChartSettingError};
 use gitlab_time_report::dashboard::create_html;
-use gitlab_time_report::model::{Label, Milestone, Project, TimeLog, TrackableItemKind};
+use gitlab_time_report::model::{Label, Milestone, TimeLog, TrackableItemKind};
 use gitlab_time_report::validation::{TimeLogValidator, ValidationProblem};
-use gitlab_time_report::{FetchOptions, QueryError, TimeDeltaExt, charts, create_csv, filters};
+use gitlab_time_report::{TimeDeltaExt, charts, create_csv, filters};
 use std::collections::{BTreeMap, HashSet};
 
 fn main() -> Result<(), String> {
     let cli = arguments::Arguments::parse();
-    println!("Fetching time logs from '{}'...", cli.url);
-    let project = fetch_project_data(&cli.url, cli.token).map_err(|e| e.to_string())?;
+
+    let project = fetch_projects::fetch_projects(cli.url, cli.token.as_ref())
+        .map_err(|e| e.to_string())?;
 
     let start_date_for_validation: Option<NaiveDate> = match &cli.command {
         Some(Command::Charts { chart_options } | Command::Dashboard { chart_options, .. }) => {
@@ -85,24 +87,6 @@ fn main() -> Result<(), String> {
         }
     }
     Ok(())
-}
-
-/// Fetches the time logs and related data for a GitLab repository.
-pub(crate) fn fetch_project_data(
-    url: &str,
-    token: Option<String>,
-) -> Result<Project, Box<dyn std::error::Error>> {
-    let fetch_options = FetchOptions::new(url, token)?;
-
-    let project_result = gitlab_time_report::fetch_project_time_logs(&fetch_options);
-    match project_result {
-        Ok(project) => Ok(project),
-        Err(QueryError::ProjectNotFound(url)) => {
-            print_project_not_found(&url);
-            Err(QueryError::ProjectNotFound(url).into())
-        }
-        Err(error) => Err(error.into()),
-    }
 }
 
 /// Runs validation on the entered time logs with all validators and outputs the result to the console.
@@ -328,19 +312,4 @@ pub(crate) fn create_label_options(
     });
 
     (selected_labels, other_label)
-}
-
-/// Prints a message regarding access token. URL passed to this function should be without a
-/// protocol prefix (`https://`)
-fn print_project_not_found(url: &str) {
-    let (host, path) = url.split_once('/').expect("Should be a URL with one `/`");
-    eprintln!("\
-Project \"{url}\" could not be found. If the project visibility is set to 'internal' or 'private', \
-you need to provide a GitLab access token with the 'read_api' permission and \
-specify it with the --token option.
-
-You can use a personal, group or project access token. Create a new one with one of the following URLs:
-Personal: https://{host}/-/user_settings/personal_access_tokens?name=GitLab+Time-Report&scopes=read_api
-Project:  https://{host}/{path}/-/settings/access_tokens
-Group:    Navigate to your group settings => Access Tokens => Generate new token\n");
 }

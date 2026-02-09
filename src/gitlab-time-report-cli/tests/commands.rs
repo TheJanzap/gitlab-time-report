@@ -8,12 +8,27 @@ use predicates::prelude::*;
 use std::collections::HashMap;
 use std::path::Path;
 
-/// Creates a mock for a successful response from the GitLab API
-fn create_successful_response_mock(server: &mut Server) -> Mock {
+const MAIN_REPO: &str = "test-user/test-repo";
+const DOCS_REPO: &str = "test-user/docs-repo";
+const PRIVATE_REPO: &str = "test-user/private-repo";
+
+/// Creates a mock for a successful response of the main repository from the GitLab API
+fn create_main_repo_mock(server: &mut Server) -> Mock {
     server
         .mock("POST", "/api/graphql")
+        .match_body(mockito::Matcher::Regex(MAIN_REPO.to_string()))
         .with_header("Content-Type", "application/json")
-        .with_body_from_file("tests/fixtures/serverResponseSuccess.json")
+        .with_body_from_file("tests/fixtures/serverResponseSuccessMainRepo.json")
+        .create()
+}
+
+/// Creates a mock for a successful response of the docs repository from the GitLab API
+fn create_docs_repo_response_mock(server: &mut Server) -> Mock {
+    server
+        .mock("POST", "/api/graphql")
+        .match_body(mockito::Matcher::Regex(DOCS_REPO.to_string()))
+        .with_header("Content-Type", "application/json")
+        .with_body_from_file("tests/fixtures/serverResponseSuccessDocsRepo.json")
         .create()
 }
 
@@ -90,8 +105,8 @@ fn test_help_flag() {
 #[test]
 fn test_tables_function_prints_to_stout() {
     let mut server = Server::new();
-    let mock = create_successful_response_mock(&mut server);
-    let url = format!("{}/test-user/test-repo", server.url());
+    let mock = create_main_repo_mock(&mut server);
+    let url = format!("{}/{MAIN_REPO}", server.url());
 
     cargo_bin_cmd!("gitlab-time-report-cli")
         .args([&url])
@@ -105,10 +120,33 @@ fn test_tables_function_prints_to_stout() {
 }
 
 #[test]
+fn test_tables_function_with_multiple_urls() {
+    let mut server = Server::new();
+    let main_mock = create_main_repo_mock(&mut server);
+    let docs_mock = create_docs_repo_response_mock(&mut server);
+    let url1 = format!("{}/{MAIN_REPO}", server.url());
+    let url2 = format!("{}/{DOCS_REPO}", server.url());
+
+    cargo_bin_cmd!("gitlab-time-report-cli")
+        .args([&url1, &url2])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Yesterday"))
+        .stdout(predicate::str::contains("Integration Test User 1"))
+        .stdout(predicate::str::contains("Bug"))
+        .stdout(predicate::str::contains("Integration Test User 2"))
+        .stdout(predicate::str::contains("Documentation"))
+        .stdout(predicate::str::contains("Docia Manuale"));
+
+    main_mock.assert();
+    docs_mock.assert();
+}
+
+#[test]
 fn test_project_not_found_message_to_stout() {
     let mut server = Server::new();
     let mock = create_project_not_found_mock(&mut server);
-    let url = format!("{}/test-user/private-repo", server.url());
+    let url = format!("{}/{PRIVATE_REPO}", server.url());
 
     cargo_bin_cmd!("gitlab-time-report-cli")
         .args([&url])
@@ -124,8 +162,8 @@ fn test_project_not_found_message_to_stout() {
 #[test]
 fn test_export_command_succeeds_and_writes_csv_to_disk() {
     let mut server = Server::new();
-    let mock = create_successful_response_mock(&mut server);
-    let url = format!("{}/test-user/test-repo", server.url());
+    let mock = create_main_repo_mock(&mut server);
+    let url = format!("{}/{MAIN_REPO}", server.url());
 
     let dir = tempfile::tempdir().unwrap();
     let output_path = dir.path().join("timelogs.csv");
@@ -147,8 +185,8 @@ fn test_export_command_succeeds_and_writes_csv_to_disk() {
 #[test]
 fn test_charts_command_writes_charts_to_disk() {
     let mut server = Server::new();
-    let mock = create_successful_response_mock(&mut server);
-    let url = format!("{}/test-user/test-repo", server.url());
+    let mock = create_main_repo_mock(&mut server);
+    let url = format!("{}/{MAIN_REPO}", server.url());
 
     let dir = tempfile::tempdir().unwrap();
     let output_path = dir.path().join("test-charts");
@@ -177,8 +215,8 @@ fn test_charts_command_writes_charts_to_disk() {
 #[test]
 fn test_charts_command_with_env_vars() {
     let mut server = Server::new();
-    let mock = create_successful_response_mock(&mut server);
-    let url = format!("{}/test-user/test-repo", server.url());
+    let mock = create_main_repo_mock(&mut server);
+    let url = format!("{}/{MAIN_REPO}", server.url());
 
     let dir = tempfile::tempdir().unwrap();
     let output_path = dir.path().join("charts");
@@ -207,8 +245,8 @@ fn test_dashboard_command_creates_dashboard_and_charts() {
     const DASHBOARD_FILE_NAME: &str = "test_dashboard.html";
 
     let mut server = Server::new();
-    let mock = create_successful_response_mock(&mut server);
-    let url = format!("{}/test-user/test-repo", server.url());
+    let mock = create_main_repo_mock(&mut server);
+    let url = format!("{}/{MAIN_REPO}", server.url());
 
     let dir = tempfile::tempdir().unwrap();
     let output_path = dir.path().join("test-charts");
@@ -240,4 +278,48 @@ fn test_dashboard_command_creates_dashboard_and_charts() {
     assert!(dashboard_content.contains("<!DOCTYPE html>"));
     assert!(dashboard_content.contains("Integration Test User 1"));
     assert!(dashboard_content.contains("Bug"));
+}
+
+#[test]
+fn test_dashboard_command_with_multiple_urls() {
+    const MERGED_REPO_NAME: &str = "Test, Documentation Repository Time Tracking Dashboard";
+    const DASHBOARD_FILE_PATH: &str = "../test_documentation-repository_dashboard.html";
+
+    let mut server = Server::new();
+    let main_mock = create_main_repo_mock(&mut server);
+    let docs_mock = create_docs_repo_response_mock(&mut server);
+    let url1 = format!("{}/{MAIN_REPO}", server.url());
+    let url2 = format!("{}/{DOCS_REPO}", server.url());
+
+    let dir = tempfile::tempdir().unwrap();
+    let output_path = dir.path().join("test-charts");
+
+    cargo_bin_cmd!("gitlab-time-report-cli")
+        .args([
+            &url1,
+            &url2,
+            "dashboard",
+            "--output",
+            output_path.to_str().unwrap(),
+            "--sprints",
+            "4",
+            "--hours-per-person",
+            "64",
+            "--weeks-per-sprint",
+            "1",
+        ])
+        .assert()
+        .success();
+
+    main_mock.assert();
+    docs_mock.assert();
+
+    assert!(output_path.exists());
+    test_charts(&output_path);
+    let dashboard_content = std::fs::read_to_string(output_path.join(DASHBOARD_FILE_PATH)).unwrap();
+    assert!(
+        dashboard_content.contains(&format!("<h1>{MERGED_REPO_NAME}</h1>")),
+        "{}",
+        format!("Repository name is incorrect, expected: {MERGED_REPO_NAME}")
+    );
 }

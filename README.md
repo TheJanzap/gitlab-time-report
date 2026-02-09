@@ -107,6 +107,16 @@ If you wish to export all your time logs for further processing, use the `export
 gitlab-time-report-cli https://gitlab.com/username/my-repo export
 ```
 
+## Combine multiple repositories
+
+To support a polyrepo structure, you can combine time logs from multiple repositories to appear as a single repository.
+Specify multiple URLs separated by spaces. Note that all repositories must either be public or use the same
+access token. It is not possible to use different access tokens per repository.
+
+```sh
+gitlab-time-report-cli https://gitlab.com/username/my-repo https://gitlab.com/username/my-other-repo dashboard --sprints 9 --weeks-per-sprint 1 --hours-per-person 360
+```
+
 ## Exclude Labels
 
 If you have many labels on GitLab, you may want to exclude some of them. With `--labels`, you can specify what labels

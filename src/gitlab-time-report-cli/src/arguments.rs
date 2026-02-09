@@ -15,15 +15,19 @@ If a time log violates any of these rules, it is printed to the console. \
 No automatic correction is performed. You can display the full validation results with --validation-details.";
 
 #[derive(Parser)]
-#[command(version, about, arg_required_else_help = true, before_help = BEFORE_HELP, after_help = AFTER_HELP
+#[command(version, about, before_help = BEFORE_HELP, after_help = AFTER_HELP,
+    arg_required_else_help = true, subcommand_precedence_over_arg = true
 )]
 pub(super) struct Arguments {
-    /// The URL of the GitLab repository you want to export time logs from.
+    /// The URLs of the GitLab repositories you want to export time logs from.
+    /// When using multiple URLs, separate them with a space.
     #[arg(value_name = "URL", env = "GITLAB_URL")]
-    pub(super) url: String,
+    pub(super) url: Vec<String>,
 
     /// A GitLab access token. Needed if the repository is not public.
     /// Can be a personal, group, or repository access token.
+    /// All repositories must be accessible with the same token, using different tokens per
+    /// repository is not supported.
     #[arg(short, long, env = "GITLAB_TOKEN")]
     pub(super) token: Option<String>,
 

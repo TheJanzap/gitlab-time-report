@@ -48,7 +48,10 @@ impl<'a> RenderOptions<'a> {
             theme_file_path,
             output_path,
             file_name_prefix: 1,
-            repository_name: repository_name.replace(' ', "-").to_lowercase(),
+            repository_name: repository_name
+                .replace(", ", "_")
+                .replace(' ', "-")
+                .to_lowercase(),
         })
     }
 }
