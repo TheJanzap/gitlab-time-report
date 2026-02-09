@@ -5,7 +5,7 @@ use serde::Deserialize;
 use serde_with::{DisplayFromStr, DurationSeconds, NoneAsEmptyString, serde_as};
 
 /// The queried GitLab repository.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Default)]
 pub struct Project {
     /// The name of the repository.
     pub name: String,
@@ -13,6 +13,16 @@ pub struct Project {
     pub time_logs: Vec<TimeLog>,
     /// Total Time spent on the project
     pub total_spent_time: Duration,
+}
+
+impl Project {
+    /// Merges two projects into one. The name of the resulting project is a comma-seperated string
+    /// of the input projects.
+    pub fn merge(&mut self, other: Project) {
+        self.name = format!("{}, {}", self.name, other.name);
+        self.total_spent_time += other.total_spent_time;
+        self.time_logs.extend(other.time_logs);
+    }
 }
 
 /// A single entry of time spent on an issue or merge request.
@@ -161,5 +171,40 @@ pub struct Label {
 impl std::fmt::Display for Label {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.title)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_merge_projects() {
+        let mut project1 = Project {
+            name: "Frontend".to_string(),
+            total_spent_time: Duration::hours(2),
+            time_logs: vec![],
+        };
+        project1.time_logs.push(TimeLog {
+            spent_at: Local::now() - Duration::days(1),
+            time_spent: Duration::hours(2),
+            ..Default::default()
+        });
+
+        let mut project2 = Project {
+            name: "Backend".to_string(),
+            total_spent_time: Duration::hours(1),
+            time_logs: vec![],
+        };
+        project2.time_logs.push(TimeLog {
+            spent_at: Local::now() - Duration::weeks(1),
+            time_spent: Duration::hours(1),
+            ..Default::default()
+        });
+
+        project1.merge(project2);
+        assert_eq!(project1.name, "Frontend, Backend");
+        assert_eq!(project1.total_spent_time, Duration::hours(3));
+        assert_eq!(project1.time_logs.len(), 2);
     }
 }

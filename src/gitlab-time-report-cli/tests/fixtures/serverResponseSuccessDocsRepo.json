@@ -1,0 +1,44 @@
+{
+  "data": {
+    "project": {
+      "name": "Documentation Repository",
+      "timelogs": {
+        "pageInfo": {
+          "hasNextPage": false,
+          "endCursor": "random"
+        },
+        "totalSpentTime": "7200",
+        "nodes": [
+          {
+            "spentAt": "2025-10-01T12:00:00+02:00",
+            "timeSpent": 7200,
+            "summary": "",
+            "user": {
+              "name": "Docia Manuale",
+              "username": "doc-man"
+            },
+            "issue": {
+              "iid": "2",
+              "title": "Write architect chapter",
+              "timeEstimate": 0,
+              "totalTimeSpent": 7200,
+              "assignees": {
+                "nodes": []
+              },
+              "milestone": null,
+              "labels": {
+                "nodes": [
+                  {
+                    "title": "Documentation"
+                  }
+                ]
+              }
+            },
+            "mergeRequest": null
+          }
+        ]
+      }
+    }
+  },
+  "correlationId": "random-correlation-id"
+}

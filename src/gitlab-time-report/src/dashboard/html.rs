@@ -76,7 +76,10 @@ fn create_html_with_writer(
 
     let html_filename = format!(
         "{}_dashboard.html",
-        repository_name.replace(' ', "-").to_lowercase()
+        repository_name
+            .replace(", ", "_")
+            .replace(' ', "-")
+            .to_lowercase()
     );
     let html_path = parent_directory.join(html_filename);
 
