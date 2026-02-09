@@ -1,8 +1,10 @@
 //! This library exports time logs from a GitLab project and creates statistics and charts
 //! showing the working hours spent on it.
 
+#[cfg(feature = "charts")]
 pub mod charts;
 mod chrono_extensions;
+#[cfg(feature = "dashboard")]
 pub mod dashboard;
 pub mod export;
 mod fetch_api;

@@ -14,7 +14,7 @@ categories = { workspace = true }
 workspace = true
 
 [dependencies]
-gitlab-time-report = { workspace = true }
+gitlab-time-report = { workspace = true, features = ["charts", "dashboard"] }
 chrono = { workspace = true }
 clap = { version = "4.5.56", default-features = false, features = ["std", "color", "suggestions", "error-context", "usage", "help", "derive", "env"] }
 cli-table = { version = "0.5.0", default-features = false }

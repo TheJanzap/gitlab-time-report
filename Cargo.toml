@@ -14,7 +14,7 @@ categories = ["command-line-utilities", "visualization"]
 
 [workspace.dependencies]
 gitlab-time-report = { path = "src/gitlab-time-report", version = "1.1.0" }
-chrono = { version = "0.4.43", default-features = false }
+chrono = { version = "0.4.43", default-features = false, features = ["clock"] }
 
 [workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tarpaulin_include)', 'cfg(tarpaulin)'] }
