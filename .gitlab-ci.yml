@@ -257,7 +257,7 @@ doc:gitlab-time-report:
     - ./$BINARY_NAME $CI_PROJECT_URL --token $PROJECT_TOKEN dashboard
   artifacts:
     paths:
-      - dashboard.html
+      - gitlab-time-report_dashboard.html
   rules:
     # Always run on the main branch
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -281,7 +281,7 @@ pages:
     # Deploy HTML Rust code documentation
     - mv target/doc public/code-doc
     # Deploy dashboard of the repository
-    - mv dashboard.html public/dashboard-project.html
+    - mv gitlab-time-report_dashboard.html public/dashboard-project.html
     # Deploy sample dashboard
     - mv docs/dashboard-sample.html public/dashboard-sample.html
   rules:
