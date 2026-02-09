@@ -61,7 +61,7 @@ fn main() -> Result<(), String> {
             )
             .map_err(|e| e.to_string())?;
 
-            create_html(
+            let path = create_html(
                 &project.time_logs,
                 &chart_options.output,
                 selected_labels.as_ref(),
@@ -69,7 +69,7 @@ fn main() -> Result<(), String> {
                 &project.name,
             )
             .map_err(|e| e.to_string())?;
-            println!("Dashboard 'dashboard.html' successfully created.");
+            println!("Dashboard '{}' successfully created.", path.display());
         }
         None => {
             print_table::print_timelogs_in_timeframes_by_user(&project.time_logs);

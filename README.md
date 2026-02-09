@@ -152,7 +152,7 @@ gitlab-time-report:
     - ./gitlab-time-report-cli $CI_PROJECT_URL dashboard --sprints 5 --weeks-per-sprint 3 --hours-per-person 360
   artifacts:
     paths:
-      - dashboard.html
+      - "*_dashboard.html"
 
 pages:
   needs: [ "gitlab-time-report" ]
@@ -161,8 +161,10 @@ pages:
     # Create Pages folder if it doesn't exist
     - mkdir -p public
     # Deploy dashboard
-    - mv dashboard.html public/dashboard.html
-    - echo "Time Tracking Dashboard available on GitLab Pages at $CI_PAGES_URL/dashboard.html"
+    - mv *_dashboard.html public
+    # Loop over all available dashboards and provide the GitLab Pages links
+    - echo "Time Tracking Dashboard available on GitLab Pages at:"
+    - (cd public && for file in *_dashboard.html; do echo "$CI_PAGES_URL/$file"; done)
   rules:
     # Only deploy when pushing to main
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -189,7 +191,7 @@ gitlab-time-report:
   artifacts:
     paths:
       - charts
-      - dashboard.html
+      - "*_dashboard.html"
 
 documentation:
   image:
@@ -200,7 +202,7 @@ documentation:
     # Move charts into documentation. Make sure to change the path 
     - mv -f charts/*.svg my/image/path
     # Move dashboard into documentation. See Typst snippet in the README on how to insert it.
-    - mv -f dashboard.html my/attachment/path
+    - mv -f *_dashboard.html my/attachment/path
     - typst compile main.typ
   artifacts:
     paths:
@@ -213,8 +215,10 @@ pages:
     # Create Pages folder if it doesn't exist
     - mkdir -p public
     # Deploy dashboard
-    - mv dashboard.html public/dashboard.html
-    - echo "Time Tracking Dashboard available on GitLab Pages at $CI_PAGES_URL/dashboard.html"
+    - mv *_dashboard.html public
+    # Loop over all available dashboards and provide the GitLab Pages links
+    - echo "Time Tracking Dashboard available on GitLab Pages at:"
+    - (cd public && for file in *_dashboard.html; do echo "$CI_PAGES_URL/$file"; done)
   rules:
     # Only deploy when pushing to main
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

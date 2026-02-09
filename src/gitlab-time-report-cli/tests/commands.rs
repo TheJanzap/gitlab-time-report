@@ -204,6 +204,8 @@ fn test_charts_command_with_env_vars() {
 
 #[test]
 fn test_dashboard_command_creates_dashboard_and_charts() {
+    const DASHBOARD_FILE_NAME: &str = "test_dashboard.html";
+
     let mut server = Server::new();
     let mock = create_successful_response_mock(&mut server);
     let url = format!("{}/test-user/test-repo", server.url());
@@ -231,7 +233,10 @@ fn test_dashboard_command_creates_dashboard_and_charts() {
 
     assert!(output_path.exists());
     test_charts(&output_path);
-    let dashboard_content = std::fs::read_to_string(output_path.join("../dashboard.html")).unwrap();
+
+    let dashboard_path = output_path.parent().unwrap().join(DASHBOARD_FILE_NAME);
+    assert!(dashboard_path.exists());
+    let dashboard_content = std::fs::read_to_string(dashboard_path).unwrap();
     assert!(dashboard_content.contains("<!DOCTYPE html>"));
     assert!(dashboard_content.contains("Integration Test User 1"));
     assert!(dashboard_content.contains("Bug"));

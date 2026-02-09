@@ -36,7 +36,8 @@ struct ExtractedChartJs {
     external_script_tags: String,
 }
 
-/// Creates a HTML file at `path` that contains statistics and charts about the given time logs.
+/// Creates a HTML file that contains statistics and charts about the given time logs.
+/// Returns the path of the created HTML file.
 /// # Errors
 /// Possible errors can be seen in [`HtmlError`].
 #[cfg(not(tarpaulin_include))]
@@ -46,7 +47,7 @@ pub fn create_html(
     label_filter: Option<&HashSet<String>>,
     label_others: Option<&Label>,
     repository_name: &str,
-) -> Result<(), HtmlError> {
+) -> Result<PathBuf, HtmlError> {
     create_html_with_writer(
         time_logs,
         charts_dir,
@@ -65,14 +66,19 @@ fn create_html_with_writer(
     label_others: Option<&Label>,
     repository_name: &str,
     writer: &impl HtmlWriter,
-) -> Result<(), HtmlError> {
+) -> Result<PathBuf, HtmlError> {
     let parent_directory = charts_dir
         .parent()
         .ok_or(HtmlError::Io(std::io::Error::new(
             std::io::ErrorKind::InvalidInput,
             "Path does not contain parent directory",
         )))?;
-    let html_path = parent_directory.join("dashboard.html");
+
+    let html_filename = format!(
+        "{}_dashboard.html",
+        repository_name.replace(' ', "-").to_lowercase()
+    );
+    let html_path = parent_directory.join(html_filename);
 
     let html_string = create_html_string(
         time_logs,
@@ -82,7 +88,7 @@ fn create_html_with_writer(
         repository_name,
     )?;
     writer.write_html(&html_string, &html_path)?;
-    Ok(())
+    Ok(html_path)
 }
 
 /// Creates a string with the current timestamp in the ISO 8601 format.
@@ -236,8 +242,8 @@ fn extract_charming_chart_js(
 
     let script_body = chart_script_tag.text().collect::<String>()
         .replace(
-        "document.getElementById('chart')",
-        &format!("document.getElementById('{target_div_id}')")
+            "document.getElementById('chart')",
+            &format!("document.getElementById('{target_div_id}')"),
         )
         .replace(
             "chart.setOption(option);",
@@ -275,7 +281,8 @@ mod tests {
     use std::sync::{Arc, Mutex};
     use tempfile::tempdir;
 
-    const REPOSITORY_NAME: &str = "test-repository";
+    const REPOSITORY_NAME: &str = "Test Repository";
+    const HTML_FILE_NAME: &str = "test-repository_dashboard.html";
     const EXTERNAL_SCRIPTS: &str = r#"<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>"#;
 
@@ -370,11 +377,12 @@ mod tests {
         let mut mock_writer = MockHtmlWriter::new();
         let captured_html = Arc::new(Mutex::new(String::new()));
         let clone_for_closure = Arc::clone(&captured_html);
+        let root_dir_path_clone = root_dir_path.clone();
 
         mock_writer
             .expect_write_html()
             .times(1)
-            .withf(move |_, path| path == root_dir_path.join("dashboard.html"))
+            .withf(move |_, path| path == root_dir_path_clone.join(HTML_FILE_NAME))
             .returning(move |data, _| {
                 // Extract the HTML from the closure
                 *clone_for_closure.lock().unwrap() = data.to_string();
@@ -392,6 +400,8 @@ mod tests {
             &mock_writer,
         );
         assert!(result.is_ok());
+        assert_eq!(result.unwrap(), root_dir_path.join(HTML_FILE_NAME));
+
         let html = captured_html.lock().unwrap();
 
         assert!(html.contains(REPOSITORY_NAME));
