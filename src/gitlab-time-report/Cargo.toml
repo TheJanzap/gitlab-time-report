@@ -19,7 +19,7 @@ dashboard = ["charts", "dep:build_html", "dep:scraper"]
 
 [dependencies]
 chrono = { workspace = true }
-reqwest = { version = "0.13.1", default-features = false, features = ["http2", "default-tls", "system-proxy", "blocking", "json"] }
+reqwest = { version = "0.13.2", default-features = false, features = ["http2", "native-tls", "system-proxy", "blocking", "json"] }
 serde = { version = "1.0.228", default-features = false }
 serde_json = { version = "1.0.149", default-features = false }
 serde_with = { version = "3.16.1", default-features = false, features = ["std", "macros", "chrono"] }
