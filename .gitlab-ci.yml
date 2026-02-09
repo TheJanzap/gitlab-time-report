@@ -1,6 +1,6 @@
 # Global variables
 variables:
-  RUST_VERSION: "1.91"
+  RUST_VERSION: "1.93"
   RUST_CONTAINER: "rust:$RUST_VERSION"
   BINARY_NAME: "gitlab-time-report-cli"
   PACKAGE_REGISTRY_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/gitlab-time-report/$CI_COMMIT_TAG"
@@ -69,9 +69,8 @@ stages:
   rules:
     # Always run on main branch to generate files for GitLab Pages deployment
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    # On feature branches, run on MRs and only when files in 'src' or root Cargo files change
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
+    # On feature branches, run only when files in 'src' or root Cargo files change
+    - changes:
         - src/**/*
         - Cargo.lock
         - Cargo.toml
@@ -178,14 +177,14 @@ test:
     # Outputs backtraces in failed tests
     RUST_BACKTRACE: full
     # Install junitify to turn Cargo JSON into JUnit Reports for GitLab
-    CARGO_CRATES: junitify
+    CARGO_CRATES: cargo2junit
   script:
     # Run all tests, create JSON output and parse it to JUnit format
-    - cargo test --workspace -- -Z unstable-options --format json --report-time | junitify --out $CI_PROJECT_DIR/tests/
+    - cargo test --workspace -- -Z unstable-options --format json --report-time | cargo2junit > test-results.xml
   artifacts:
     when: always
     reports:
-      junit: $CI_PROJECT_DIR/tests/*.xml
+      junit: $CI_PROJECT_DIR/test-results.xml
 
 # Generate line and code coverage
 test:coverage:
