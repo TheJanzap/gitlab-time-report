@@ -304,7 +304,7 @@ details.
 
 [Linux x86_64 GNU]: https://gitlab.com/gitlab-time-report/gitlab-time-report/-/releases/permalink/latest/downloads/gitlab-time-report-cli-linux-x86_64-gnu
 
-[Placeholder images]: docs/placeholder_images
+[Placeholder images]: docs/placeholders
 
 [Rust Beginner's Guide]: docs/Eine_Einführung_in_Rust.pdf
 
