@@ -19,8 +19,8 @@ use std::collections::{BTreeMap, HashSet};
 fn main() -> Result<(), String> {
     let cli = arguments::Arguments::parse();
 
-    let project = fetch_projects::fetch_projects(cli.url, cli.token.as_ref())
-        .map_err(|e| e.to_string())?;
+    let project =
+        fetch_projects::fetch_projects(cli.url, cli.token.as_ref()).map_err(|e| e.to_string())?;
 
     let start_date_for_validation: Option<NaiveDate> = match &cli.command {
         Some(Command::Charts { chart_options } | Command::Dashboard { chart_options, .. }) => {
@@ -113,9 +113,9 @@ pub(crate) fn validate_time_logs(
 
     // Print summary and return when detailed listing is not desired
     if !show_validation_details {
-        match results.is_empty() {
-            true => println!("No problems found in the time logs of the project."),
-            false => println!(
+        match number_of_problems {
+            0 => println!("\nNo problems found in the time logs of the project."),
+            _ => println!(
                 "\n{number_of_problems} problems found in the time logs of the project. To see the problems, run with --validation-details",
             ),
         }
