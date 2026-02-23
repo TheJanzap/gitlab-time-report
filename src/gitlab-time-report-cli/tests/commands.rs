@@ -160,6 +160,37 @@ fn test_project_not_found_message_to_stout() {
 }
 
 #[test]
+fn test_logs_with_problems_shows_correct_message() {
+    let mut server = Server::new();
+    let mock = create_main_repo_mock(&mut server);
+    let url = format!("{}/{MAIN_REPO}", server.url());
+
+    cargo_bin_cmd!("gitlab-time-report-cli")
+        .args([&url])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("problems found"))
+        .stdout(predicate::str::contains("--validation-details"));
+
+    mock.assert();
+}
+
+#[test]
+fn test_logs_without_problems_shows_correct_message() {
+    let mut server = Server::new();
+    let mock = create_docs_repo_response_mock(&mut server);
+    let url = format!("{}/{DOCS_REPO}", server.url());
+
+    cargo_bin_cmd!("gitlab-time-report-cli")
+        .args([&url])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("No problems found"));
+
+    mock.assert();
+}
+
+#[test]
 fn test_export_command_succeeds_and_writes_csv_to_disk() {
     let mut server = Server::new();
     let mock = create_main_repo_mock(&mut server);
