@@ -274,10 +274,14 @@ To ensure that project planning via GitLab remains a viable alternative for scho
 products such as Jira or YouTrack, this project aims to bridge the gap between time recording and using data for
 planning.
 
+The full paper of GitLab Time-Report (in German) can be accessed on the [OST ePrint server].
+
+
 - [Code documentation of the CLI](https://gitlab-time-report-1c2e47.gitlab.io/code-doc/gitlab_time_report_cli/index.html)
 - [Code documentation of the library](https://gitlab-time-report-1c2e47.gitlab.io/code-doc/gitlab_time_report/index.html)
 - [Project dashboard](https://gitlab-time-report-1c2e47.gitlab.io/dashboard-project.html)
 - [Code coverage report][]
+
 
 # Disclaimer
 
@@ -323,3 +327,5 @@ details.
 [CI/CD variable]: https://docs.gitlab.com/ci/variables/#for-a-project
 
 [Rosetta 2]: https://support.apple.com/en-us/102527
+
+[OST ePrint server]: https://eprints.ost.ch/id/eprint/1352/
