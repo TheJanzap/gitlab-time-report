@@ -1,7 +1,7 @@
 //! Contains the methods to create a CSV file from a list of time logs.
 
 use crate::model::{TimeLog, TrackableItemKind};
-use chrono::NaiveDate;
+use chrono::{DateTime, Local};
 use csv::{Writer, WriterBuilder};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
@@ -13,7 +13,7 @@ use mockall::automock;
 /// The columns of the CSV to be exported.
 #[derive(Serialize)]
 struct TimeLogCsvRow {
-    spent_at: NaiveDate,
+    spent_at: DateTime<Local>,
     time_spent_seconds: i64,
     summary: Option<String>,
     user_name: String,
@@ -96,7 +96,7 @@ fn create_csv_with_writer(
         };
 
         let csv_row = TimeLogCsvRow {
-            spent_at: log.spent_at.date_naive(),
+            spent_at: log.spent_at,
             time_spent_seconds: log.time_spent.num_seconds(),
             summary: log.summary.clone(),
             user_name: log.user.name.clone(),
