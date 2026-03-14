@@ -1,7 +1,7 @@
 //! Contains functions to generate the tables with time statistics.
 
 use crate::model::{Label, TimeLog, User};
-use crate::{filters, TimeDeltaExt};
+use crate::{TimeDeltaExt, filters};
 use chrono::{Duration, Local};
 use std::collections::{HashMap, HashSet};
 
@@ -269,7 +269,7 @@ mod tests {
     fn test_total_time_by_user_yesterday() {
         const NUMBER_OF_USERS: usize = 1;
         const TIME_SPENT: Duration = Duration::seconds(3600);
-        
+
         let time_logs = get_timelogs();
         let result = get_total_time_by_user_yesterday(&time_logs);
         let name_map = to_name_map(&result);
@@ -291,7 +291,7 @@ mod tests {
         const N_DAYS: Duration = Duration::days(1);
         const TIME_SPENT_USER_1: Duration = Duration::seconds(1800);
         const TIME_SPENT_USER_3: Duration = Duration::seconds(5400);
-        
+
         let time_logs = get_timelogs();
         let result = get_total_time_by_user_in_last_n_days(&time_logs, N_DAYS);
         let name_map = to_name_map(&result);
@@ -308,7 +308,7 @@ mod tests {
         const TIME_SPENT_USER_1: Duration = Duration::seconds(5400);
         const TIME_SPENT_USER_2: Duration = Duration::seconds(3600);
         const TIME_SPENT_USER_3: Duration = Duration::seconds(5400);
-        
+
         let time_logs = get_timelogs();
         let result = get_total_time_by_user_in_last_n_days(&time_logs, N_DAYS);
         let name_map = to_name_map(&result);
@@ -322,7 +322,7 @@ mod tests {
     fn test_create_table_timelogs_in_timeframes_by_user_header_and_rows() {
         const NUMBER_OF_STATS: usize = 5;
         const NUMBER_OF_COLUMNS: usize = NUMBER_OF_STATS + 1;
-        
+
         let time_logs = get_timelogs();
         let (table, _header) = populate_table_timelogs_in_timeframes_by_user(&time_logs);
 

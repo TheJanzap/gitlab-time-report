@@ -4,9 +4,9 @@ variables:
   RUST_CONTAINER: "rust:$RUST_VERSION"
   BINARY_NAME: "gitlab-time-report-cli"
   PACKAGE_REGISTRY_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/gitlab-time-report/$CI_COMMIT_TAG"
-  RELEASE_BIN_LINUX: "gitlab-time-report-cli-linux-x86_64-gnu"
-  RELEASE_BIN_WINDOWS: "gitlab-time-report-cli-windows-x86_64.exe"
-  RELEASE_BIN_MACOS: "gitlab-time-report-cli-macos-x86_64"
+  RELEASE_BIN_LINUX: "${BINARY_NAME}-linux-x86_64-gnu"
+  RELEASE_BIN_WINDOWS: "${BINARY_NAME}-windows-x86_64.exe"
+  RELEASE_BIN_MACOS: "${BINARY_NAME}-macos-x86_64"
 
 stages:
   # Builds all the Rust binaries
@@ -167,6 +167,16 @@ test:clippy:
     - rustup component add clippy
     - cargo clippy --workspace --all-targets -- -D warnings
 
+# Run the rustfmt linter to check formatting
+test:rustfmt:
+  extends: .rust-template
+  stage: test
+  # rustfmt doesn't need the cache
+  cache: [ ]
+  script:
+    - rustup component add rustfmt
+    - cargo fmt --all --check
+
 # Run the tests
 test:
   extends: .rust-template
@@ -176,7 +186,7 @@ test:
     RUSTC_BOOTSTRAP: 1
     # Outputs backtraces in failed tests
     RUST_BACKTRACE: full
-    # Install junitify to turn Cargo JSON into JUnit Reports for GitLab
+    # Install cargo2junit to turn Cargo JSON into JUnit Reports for GitLab
     CARGO_CRATES: cargo2junit
   script:
     # Run all tests, create JSON output and parse it to JUnit format

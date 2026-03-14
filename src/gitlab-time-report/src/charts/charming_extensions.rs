@@ -64,13 +64,11 @@ impl Series for series::Bar {}
 impl MultiSeries for series::Bar {
     /// Creates a new [`series::Bar`] with the given key and data.
     fn with_defaults<D: Into<DataPoint>>(key: &str, data: Vec<D>) -> Self {
-        series::Bar::new()
-            .name(key)
-            .data(data)
-            .label(element::Label::new()
+        series::Bar::new().name(key).data(data).label(
+            element::Label::new()
                 .show(true)
-                .position(element::LabelPosition::Top)
-            )
+                .position(element::LabelPosition::Top),
+        )
     }
 }
 
