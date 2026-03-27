@@ -2,6 +2,7 @@
 
 [![Pipeline status badge](https://gitlab.com/gitlab-time-report/gitlab-time-report/badges/main/pipeline.svg)][Latest pipeline]
 [![Test coverage badge](https://gitlab.com/gitlab-time-report/gitlab-time-report/badges/main/coverage.svg?job=test:coverage)][Code coverage report]
+[![Latest Release](https://gitlab.com/gitlab-time-report/gitlab-time-report/-/badges/release.svg)][GitLab Releases] 
 
 GitLab Time-Report is a command-line application that allows you export time logs from Issues and
 Merge Requests of a GitLab repository to create statistics and charts of your working hours.
