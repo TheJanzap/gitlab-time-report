@@ -272,6 +272,29 @@ fn test_charts_command_with_env_vars() {
 }
 
 #[test]
+fn test_env_vars_with_multiple_urls() {
+    let mut server = Server::new();
+    let main_mock = create_main_repo_mock(&mut server);
+    let docs_mock = create_docs_repo_response_mock(&mut server);
+    let url1 = format!("{}/{MAIN_REPO}", server.url());
+    let url2 = format!("{}/{DOCS_REPO}", server.url());
+
+    let envs = HashMap::from([("GITLAB_URL", format!("{url1} {url2}"))]);
+
+    let expected =
+        format!("Fetching time logs from '{url1}'...\nFetching time logs from '{url2}'...");
+
+    cargo_bin_cmd!("gitlab-time-report-cli")
+        .envs(envs)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(expected));
+
+    main_mock.assert();
+    docs_mock.assert();
+}
+
+#[test]
 fn test_dashboard_command_creates_dashboard_and_charts() {
     const DASHBOARD_FILE_NAME: &str = "test_dashboard.html";
 
