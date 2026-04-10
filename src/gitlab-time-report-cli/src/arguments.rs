@@ -21,7 +21,7 @@ No automatic correction is performed. You can display the full validation result
 pub(super) struct Arguments {
     /// The URLs of the GitLab repositories you want to export time logs from.
     /// When using multiple URLs, separate them with a space.
-    #[arg(value_name = "URL", env = "GITLAB_URL")]
+    #[arg(value_name = "URLs", value_delimiter = ' ', env = "GITLAB_URL")]
     pub(super) url: Vec<String>,
 
     /// A GitLab access token. Needed if the repository is not public.
