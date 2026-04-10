@@ -150,10 +150,8 @@ untick "Protect Variable" if you want to run the job on other branches except `m
 
 ```yml
 gitlab-time-report:
-  image: debian:latest
-  before_script:
-    # Install wget and current root CA certificates to download gitlab-time-report
-    - apt-get -qq update && apt-get -qq install ca-certificates wget
+  # Official Debian image with wget and CA certificates preinstalled
+  image: buildpack-deps:curl
   script:
     # Download the latest release of GitLab Time-Report
     - wget --no-verbose -O gitlab-time-report-cli https://gitlab.com/gitlab-time-report/gitlab-time-report/-/releases/permalink/latest/downloads/gitlab-time-report-cli-linux-x86_64-gnu
@@ -188,10 +186,8 @@ with the same name as the chart SVGs. The pipeline below will then override them
 
 ```yml
 gitlab-time-report:
-  image: debian:latest
-  before_script:
-    # Install wget and current root CA certificates to download gitlab-time-report
-    - apt-get -qq update && apt-get -qq install wget ca-certificates
+  # Official Debian image with wget and CA certificates preinstalled
+  image: buildpack-deps:curl
   script:
     # Download the latest release of GitLab Time-Report
     - wget --no-verbose -O gitlab-time-report-cli https://gitlab.com/gitlab-time-report/gitlab-time-report/-/releases/permalink/latest/downloads/gitlab-time-report-cli-linux-x86_64-gnu
