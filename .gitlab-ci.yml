@@ -262,13 +262,12 @@ doc:gitlab-time-report:
   stage: doc
   # Download gitlab-time-report debug build from the current pipeline, if running
   needs: [ "build:debug" ]
-  image: debian:latest
+  # Official Debian image, with wget and CA certificates preinstalled
+  image: buildpack-deps:curl
   variables:
     SPRINTS: 7
     WEEKS_PER_SPRINT: 2
     HOURS_PER_PERSON: 240
-  before_script:
-    - apt-get -qq update && apt-get -qq install ca-certificates
   script:
     # Move the executable into the working directory
     - mv ./target/debug/$BINARY_NAME .
