@@ -172,8 +172,7 @@ pages:
     # Deploy dashboard
     - mv *_dashboard.html public
     # Loop over all available dashboards and provide the GitLab Pages links
-    - echo "Time Tracking Dashboard available on GitLab Pages at:"
-    - (cd public && for file in *_dashboard.html; do echo "$CI_PAGES_URL/$file"; done)
+    - echo "Time Tracking Dashboard available on GitLab Pages at:"; (cd public && for file in *_dashboard.html; do echo "$CI_PAGES_URL/$file"; done)
   rules:
     # Only deploy when pushing to main
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -224,8 +223,7 @@ pages:
     # Deploy dashboard
     - mv *_dashboard.html public
     # Loop over all available dashboards and provide the GitLab Pages links
-    - echo "Time Tracking Dashboard available on GitLab Pages at:"
-    - (cd public && for file in *_dashboard.html; do echo "$CI_PAGES_URL/$file"; done)
+    - echo "Time Tracking Dashboard available on GitLab Pages at:"; (cd public && for file in *_dashboard.html; do echo "$CI_PAGES_URL/$file"; done)
   rules:
     # Only deploy when pushing to main
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
