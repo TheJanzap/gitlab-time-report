@@ -3,7 +3,7 @@
 use crate::model::{Label, TimeLog};
 use crate::tables::{
     populate_table_timelogs_by_label, populate_table_timelogs_by_milestone,
-    populate_table_timelogs_in_timeframes_by_user,
+    populate_table_timelogs_in_timeframes_by_user, populate_table_todays_timelogs,
 };
 use build_html::{Html as HtmlBuilder, HtmlContainer, Table, TableCell, TableCellType, TableRow};
 #[cfg(test)]
@@ -111,9 +111,16 @@ fn create_html_string(
     const TEMPLATE: &str = include_str!("templates/base.html");
 
     let timeframe_by_user_table = create_table_timelogs_in_timeframes_by_user(time_logs);
+    let timelogs_today_table = create_table_todays_timelogs(time_logs);
     let timelogs_by_label_table =
         create_table_total_time_by_label(time_logs, label_filter, label_others);
     let timelogs_by_milestone_table = create_table_timelogs_by_milestone(time_logs);
+
+    // Replace the today's time log table with text if there are no time logs.
+    let timelogs_today_table = match timelogs_today_table {
+        Some(table) => table.to_html_string(),
+        None => "<p class='table-no-data'>No time logs for today.</p>".to_string(),
+    };
 
     // Extract the JS from the generated chart HTML files.
     let mut chart_files = fs::read_dir(charts_dir)?
@@ -151,15 +158,19 @@ fn create_html_string(
         .join("\n");
 
     let main_title = &format!("{repository_name} Time Tracking Dashboard");
+
+    #[rustfmt::skip]
     let html = TEMPLATE
         .replace("$main_title", main_title)
         .replace("$timestamp", &create_timestamp())
-        .replace("$sub_title_1", "Time Spent per User:")
-        .replace("$content_1", &timeframe_by_user_table.to_html_string())
-        .replace("$sub_title_2", "Time Spent per Label:")
-        .replace("$content_2", &timelogs_by_label_table.to_html_string())
-        .replace("$sub_title_3", "Time Spent per Milestone:")
-        .replace("$content_3", &timelogs_by_milestone_table.to_html_string())
+        .replace("$sub_title_time_per_user", "Time Spent per User:")
+        .replace("$table_time_per_user", &timeframe_by_user_table.to_html_string())
+        .replace("$sub_title_time_logs_today", "Today's Time Logs:")
+        .replace("$table_time_logs_today", &timelogs_today_table)
+        .replace("$sub_title_time_per_label", "Time Spent per Label:")
+        .replace("$table_time_per_label", &timelogs_by_label_table.to_html_string())
+        .replace("$sub_title_time_per_milestone", "Time Spent per Milestone:")
+        .replace("$table_time_per_milestone", &timelogs_by_milestone_table.to_html_string())
         .replace("$charts_divs", &charts_divs)
         .replace("$external_script_tags", &chart_external_script_tags)
         .replace("$charts_js", &chart_js_code);
@@ -194,6 +205,20 @@ fn create_table_timelogs_in_timeframes_by_user(time_logs: &[TimeLog]) -> Table {
     table
 }
 
+/// Creates a table showing the time logs from today's date. If there are no time logs,
+/// `None` is returned.
+fn create_table_todays_timelogs(time_logs: &[TimeLog]) -> Option<Table> {
+    const DATETIME_INDEX: usize = 0;
+
+    let (mut table_data, table_header) = populate_table_todays_timelogs(time_logs);
+    if table_data.is_empty() {
+        return None;
+    }
+
+    wrap_column_in_span(&mut table_data, DATETIME_INDEX);
+    Some(Table::from(table_data).with_header_row(table_header))
+}
+
 /// Creates the Table that shows the time spent per label.
 fn create_table_total_time_by_label(
     time_logs: &[TimeLog],
@@ -209,6 +234,17 @@ fn create_table_total_time_by_label(
 fn create_table_timelogs_by_milestone(time_logs: &[TimeLog]) -> Table {
     let (table_data, table_header) = populate_table_timelogs_by_milestone(time_logs);
     Table::from(table_data).with_header_row(table_header)
+}
+
+/// Wraps the given column index in a `<span class='timestamp'>` tag.
+/// The JS in the dashboard will then convert them to the user's locale.
+fn wrap_column_in_span(table: &mut [Vec<String>], index: usize) {
+    for row in table.iter_mut() {
+        let date = chrono::DateTime::parse_from_rfc2822(&row[index])
+            .expect("Date should be in RFC2822 format")
+            .to_rfc3339();
+        row[index] = format!("<span class='timestamp'>{date}</span>");
+    }
 }
 
 /// Extracts the content of the last `<script>` tag from an HTML file.
@@ -280,7 +316,7 @@ mod tests {
     use crate::model::{
         Issue, MergeRequest, TrackableItem, TrackableItemFields, TrackableItemKind, User, UserNodes,
     };
-    use chrono::{Duration, Local};
+    use chrono::{Duration, Local, SecondsFormat};
     use std::sync::{Arc, Mutex};
     use tempfile::tempdir;
 
@@ -439,6 +475,26 @@ mod tests {
         assert!(html.contains("<th>Today</th>"));
         assert!(html.contains("var chart = echarts.init(document.getElementById('chart-0')"));
         assert!(html.contains("var chart = echarts.init(document.getElementById('chart-1')"));
+    }
+
+    #[test]
+    fn test_wrap_column_in_span() {
+        const DATETIME_INDEX: usize = 0;
+        const NUM_TODAY_LOGS: usize = 1;
+
+        let time_logs = get_timelogs();
+        let (mut table_data, table_header) = populate_table_todays_timelogs(&time_logs);
+        assert_eq!(table_header[DATETIME_INDEX], "Date");
+        assert_eq!(table_data.len(), NUM_TODAY_LOGS);
+
+        wrap_column_in_span(&mut table_data, DATETIME_INDEX);
+
+        let now = Local::now();
+        let formatted_now = now.to_rfc3339_opts(SecondsFormat::Secs, false);
+        assert_eq!(
+            table_data[0][DATETIME_INDEX],
+            format!("<span class='timestamp'>{formatted_now}</span>")
+        );
     }
 
     #[test]

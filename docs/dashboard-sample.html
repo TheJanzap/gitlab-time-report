@@ -125,7 +125,7 @@
             margin: 0;
         }
 
-        #timestamp {
+        .timestamp {
             visibility: hidden;
         }
 
@@ -157,25 +157,30 @@
 <body>
 <header>
     <h1>Sample Repository Time Tracking Dashboard</h1>
-    <span>Data generated on <span id="timestamp">2025-12-21T12:51:26.599260160+01:00</span></span>
+    <span>Data generated on <span class="timestamp">2025-12-21T19:51:26.599260160+01:00</span></span>
 </header>
 <main>
     <section>
-        <div class="chart_elem">
-            <div id="chart-0"></div><div id="chart-1"></div><div id="chart-2"></div><div id="chart-3"></div><div id="chart-4"></div><div id="chart-5"></div><div id="chart-6"></div><div id="chart-7"></div><div id="chart-8"></div>
+        <div class="chart_elem"><div id="chart-0"></div><div id="chart-1"></div><div id="chart-2"></div><div id="chart-3"></div><div id="chart-4"></div><div id="chart-5"></div><div id="chart-6"></div><div id="chart-7"></div><div id="chart-8"></div>
         </div>
     </section>
     <section class="bg_section">
         <h2>Time Spent per User:</h2>
         <div class="table-wrapper">
-            <table><thead><tr><th>User</th><th>Today</th><th>Yesterday</th><th>Last seven days</th><th>Last 30 days</th><th>Total time spent</th></tr></thead><tbody><tr><td>John Carmack</td><td>00h 45m</td><td>00h 45m</td><td>04h 30m</td><td>30h 30m</td><td>136h 45m</td></tr><tr><td>Will Wright</td><td>02h 00m</td><td>01h 45m</td><td>13h 00m</td><td>36h 15m</td><td>117h 00m</td></tr><tr><td>Roberta Williams</td><td>01h 30m</td><td>01h 15m</td><td>09h 30m</td><td>27h 45m</td><td>126h 45m</td></tr><tr><td>Shigeru Miyamoto</td><td>00h 45m</td><td>00h 45m</td><td>05h 15m</td><td>24h 30m</td><td>128h 00m</td></tr><tr><td>David Wise</td><td>00h 30m</td><td>00h 15m</td><td>01h 45m</td><td>14h 45m</td><td>120h 50m</td></tr></tbody><tfoot><tr class="total-row"><td>Total</td><td>05h 30m</td><td>04h 45m</td><td>34h 00m</td><td>133h 45m</td><td>629h 20m</td></tr></tfoot></table>
+            <table><thead><tr><th>User</th><th>Today</th><th>Yesterday</th><th>Last seven days</th><th>Last 30 days</th><th>Total time spent</th></tr></thead><tbody><tr><td>John Carmack</td><td>02h 45m</td><td>00h 45m</td><td>04h 30m</td><td>30h 30m</td><td>136h 45m</td></tr><tr><td>Will Wright</td><td>01h 15m</td><td>01h 45m</td><td>13h 00m</td><td>36h 15m</td><td>117h 00m</td></tr><tr><td>Roberta Williams</td><td>01h 45m</td><td>01h 15m</td><td>09h 30m</td><td>27h 45m</td><td>126h 45m</td></tr><tr><td>Shigeru Miyamoto</td><td>02h 00m</td><td>00h 45m</td><td>05h 15m</td><td>24h 30m</td><td>128h 00m</td></tr><tr><td>David Wise</td><td>03h 30m</td><td>00h 15m</td><td>03h 45m</td><td>14h 45m</td><td>120h 50m</td></tr></tbody><tfoot><tr class="total-row"><td>Total</td><td>11h 15m</td><td>04h 45m</td><td>34h 00m</td><td>133h 45m</td><td>629h 20m</td></tr></tfoot></table>
+        </div>
+    </section>
+    <section class="bg_section">
+        <h2>Today's Time Logs:</h2>
+        <div class="table-wrapper">
+            <table><thead><tr><th>Date</th><th>User</th><th>Time Spent</th><th>Summary</th><th>Trackable item</th></tr></thead><tbody><tr><td><span class='timestamp'>2025-12-21T08:29:31+01:00</span></td><td>Will Wright</td><td>00h 30m</td><td>Review docs change</td><td>docs: Update in-game screenshots</td></tr><tr><td><span class='timestamp'>2025-12-21T11:09:01+01:00</span></td><td>Roberta Williams</td><td>01h 45m</td><td>Puzzle design</td><td>feat: Implement cave level</td></tr><tr><td><span class='timestamp'>2025-12-21T14:09:01+01:00</span></td><td>Shigeru Miyamoto</td><td>02h 00m</td><td>Create design sheet for vampire boss fight</td><td>feat: Implement cave level</td></tr><tr><td><span class='timestamp'>2025-12-21T14:38:11+01:00</span></td><td>John Carmack</td><td>02h 45m</td><td>Debug Vulkan implementation</td><td>Graphical glitches with particles on NVIDIA cards</td></tr><tr><td><span class='timestamp'>2025-12-21T17:10:16+01:00</span></td><td>David Wise</td><td>03h 30m</td><td>Compose music for water level</td><td>Add music to World 4 levels</td></tr><tr><td><span class='timestamp'>2025-12-21T17:28:09+01:00</span></td><td>Will Wright</td><td>00h 45m</td><td>Recalculating splines</td><td>Create building system</td></tr></tbody></table>
         </div>
     </section>
     <div class="flex-container">
         <section class="bg_section">
             <h2>Time Spent per Label:</h2>
             <div class="table-wrapper">
-                <table><thead><tr><th>Label</th><th>Time Spent</th></tr></thead><tbody><tr><td>Architecture</td><td>21h 30m</td></tr><tr><td>Backend</td><td>89h 45m</td></tr><tr><td>BusinessModelling</td><td>39h 15m</td></tr><tr><td>CI/CD</td><td>38h 45m</td></tr><tr><td>Documentation</td><td>108h 45m</td></tr><tr><td>Frontend</td><td>42h 00m</td></tr><tr><td>Meeting</td><td>107h 00m</td></tr><tr><td>Others</td><td>273h 05m</td></tr></tbody></table>
+                <table><thead><tr><th>Label</th><th>Time Spent</th></tr></thead><tbody><tr><td>Architecture</td><td>21h 30m</td></tr><tr><td>Backend</td><td>89h 45m</td></tr><tr><td>Game Design</td><td>39h 15m</td></tr><tr><td>CI/CD</td><td>38h 45m</td></tr><tr><td>Documentation</td><td>108h 45m</td></tr><tr><td>UI/UX</td><td>42h 00m</td></tr><tr><td>Meeting</td><td>107h 00m</td></tr><tr><td>Others</td><td>273h 05m</td></tr></tbody></table>
             </div>
         </section>
         <section class="bg_section">
@@ -188,20 +193,24 @@
 </main>
 <script>
     function convertTimestampToLocal() {
-        const timestamp = document.getElementById("timestamp");
-        const old_timestamp = timestamp.textContent;
-        const date = new Date(old_timestamp);
-
-        timestamp.textContent = date.toLocaleString(navigator.languages[0], {
+        const mainLanguage = navigator.languages[0];
+        const format = {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
             hour: '2-digit',
             minute: '2-digit',
             timeZoneName: 'short'
-        });
+        };
 
-        timestamp.style.visibility = "visible";
+        const timestamps = document.querySelectorAll('.timestamp');
+        for (const timestamp of timestamps) {
+            const old_timestamp = timestamp.textContent;
+            const date = new Date(old_timestamp);
+
+            timestamp.textContent = date.toLocaleString(mainLanguage, format);
+            timestamp.style.visibility = "visible";
+        }
     }
 
     function makeTablesSortable(selector = 'table') {
@@ -919,7 +928,7 @@
         },
         {
           "value": "39.25",
-          "name": "BusinessModelling"
+          "name": "Game Design"
         },
         {
           "value": "38.75",
@@ -931,7 +940,7 @@
         },
         {
           "value": "42",
-          "name": "Frontend"
+          "name": "UI/UX"
         },
         {
           "value": "107",
@@ -1000,10 +1009,10 @@
     "data": [
       "Architecture",
       "Backend",
-      "BusinessModelling",
+      "Game Design",
       "CI/CD",
       "Documentation",
-      "Frontend",
+      "UI/UX",
       "Meeting",
       "Others"
     ]
@@ -1161,10 +1170,10 @@
     "data": [
       "Architecture",
       "Backend",
-      "BusinessModelling",
+      "Game Design",
       "CI/CD",
       "Documentation",
-      "Frontend",
+      "UI/UX",
       "Meeting",
       "Others"
     ]

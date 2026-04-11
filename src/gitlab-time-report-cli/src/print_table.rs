@@ -6,6 +6,7 @@ use cli_table::format::Justify;
 use cli_table::{Cell, CellStruct, Style, Table, TableStruct, print_stdout};
 use gitlab_time_report::model::{Label, TimeLog};
 use gitlab_time_report::tables;
+use regex::Regex;
 use std::collections::HashSet;
 
 /// Create a table from cells and column titles.
@@ -28,14 +29,15 @@ fn print_table(table: TableStruct) {
 /// Transform a `Vec<Vec<String>>` from the Library to a `Vec<Vec<CellStruct>>`
 /// used by the `cli_table` crate. The first column is left-aligned, all others right-aligned.
 fn to_cell_vec(table: Vec<Vec<String>>) -> Vec<Vec<CellStruct>> {
+    let is_duration = Regex::new(r"^[0-9]{2,}h [0-9]{2}m$").expect("Regex pattern should compile");
     table
         .into_iter()
         .map(|row| {
             row.into_iter()
-                .enumerate()
-                .map(|(i, cell)| match i {
-                    0 => cell.cell(),
-                    _ => cell.cell().justify(Justify::Right),
+                // Check if the cell is a duration cell
+                .map(|cell| match is_duration.is_match(&cell) {
+                    true => cell.cell().justify(Justify::Right),
+                    false => cell.cell(),
                 })
                 .collect()
         })
@@ -77,5 +79,18 @@ pub fn print_timelogs_in_timeframes_by_user(time_logs: &[TimeLog]) {
 
     let table = create_table(table_data_cells, table_header);
     println!("\nTime Spent per User:");
+    print_table(table);
+}
+
+/// Print a table of today's time logs.
+pub fn print_todays_timelogs(time_logs: &[TimeLog]) {
+    let (table_data, table_header) = tables::populate_table_todays_timelogs(time_logs);
+    println!("\nToday's Time Logs:");
+    if table_data.is_empty() {
+        println!("No time logs found for today.");
+        return;
+    }
+    let table_data_cells = to_cell_vec(table_data);
+    let table = create_table(table_data_cells, table_header);
     print_table(table);
 }
