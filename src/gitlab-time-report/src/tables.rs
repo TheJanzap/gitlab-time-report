@@ -23,6 +23,13 @@ fn get_total_time_by_user_yesterday(time_logs: &[TimeLog]) -> HashMap<&User, Dur
     filters::total_time_spent_by_user(filtered).collect()
 }
 
+/// Get all time logs with today's date.
+#[must_use]
+fn get_todays_time_logs(time_logs: &[TimeLog]) -> Vec<&TimeLog> {
+    let today = Local::now().date_naive();
+    filters::filter_by_date(time_logs, today, today).collect()
+}
+
 /// Helper function to get duration from a map, returning zero if not found
 #[must_use]
 fn get_duration_or_zero<'a>(map: &HashMap<&'a User, Duration>, user: &'a User) -> Duration {
@@ -126,6 +133,28 @@ pub fn populate_table_timelogs_by_milestone<'a>(
     (table_data, table_header)
 }
 
+#[must_use]
+pub fn populate_table_todays_timelogs(time_logs: &[TimeLog]) -> (Vec<Vec<String>>, &[&str]) {
+    let todays_timelogs = get_todays_time_logs(time_logs);
+
+    let mut table_data: Vec<_> = todays_timelogs
+        .iter()
+        .map(|timelog| {
+            let date_time = timelog.spent_at.to_rfc2822();
+            let user = timelog.user.to_string();
+            let time_spent = timelog.time_spent.to_hm_string();
+            let summary = timelog.summary.clone().unwrap_or_default();
+            let trackable_item = timelog.trackable_item.common.title.clone();
+            vec![date_time, user, time_spent, summary, trackable_item]
+        })
+        .collect();
+
+    table_data.sort();
+
+    let table_header = &["Date", "User", "Time Spent", "Summary", "Trackable item"];
+    (table_data, table_header)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -133,9 +162,9 @@ mod tests {
         Issue, Label, Labels, MergeRequest, Milestone, TimeLog, TrackableItem, TrackableItemFields,
         TrackableItemKind, User,
     };
-    use chrono::{Duration, Local};
+    use chrono::{Duration, Local, Timelike};
 
-    const NUMBER_OF_LOGS: usize = 4;
+    const NUMBER_OF_LOGS: usize = 5;
 
     fn create_test_user(name: &str) -> User {
         User {
@@ -145,52 +174,53 @@ mod tests {
     }
 
     fn get_timelogs() -> [TimeLog; NUMBER_OF_LOGS] {
-        let now = Local::now();
+        let now = Local::now().with_second(0).unwrap();
+        let c4_issue = TrackableItem {
+            common: TrackableItemFields {
+                title: "Create C4 model".to_string(),
+                milestone: Some(Milestone {
+                    title: "End of Elaboration".to_string(),
+                    ..Default::default()
+                }),
+                labels: Labels {
+                    labels: vec![Label {
+                        title: "Documentation".into(),
+                    }],
+                },
+                ..Default::default()
+            },
+            kind: TrackableItemKind::Issue(Issue::default()),
+        };
+
         [
             TimeLog {
                 spent_at: now - Duration::days(2),
                 time_spent: Duration::seconds(3600),
                 summary: None,
-                user: User {
-                    name: "user1".to_string(),
-                    username: "user1".to_string(),
-                },
-                trackable_item: TrackableItem::default(),
-            },
-            TimeLog {
-                spent_at: now - Duration::days(1),
-                time_spent: Duration::seconds(3600),
-                summary: Some("test".to_string()),
-                user: User {
-                    name: "user2".to_string(),
-                    username: "user2".to_string(),
-                },
+                user: create_test_user("user1"),
                 trackable_item: TrackableItem {
                     common: TrackableItemFields {
-                        milestone: Some(Milestone {
-                            title: "End of Elaboration".to_string(),
-                            ..Default::default()
-                        }),
-                        labels: Labels {
-                            labels: vec![Label {
-                                title: "Documentation".into(),
-                            }],
-                        },
+                        title: "Meeting notes".to_string(),
                         ..Default::default()
                     },
                     kind: TrackableItemKind::Issue(Issue::default()),
                 },
             },
             TimeLog {
+                spent_at: now - Duration::days(1),
+                time_spent: Duration::seconds(3600),
+                summary: Some("test".to_string()),
+                user: create_test_user("user2"),
+                trackable_item: c4_issue.clone(),
+            },
+            TimeLog {
                 spent_at: now,
                 time_spent: Duration::seconds(1800),
                 summary: Some("test".to_string()),
-                user: User {
-                    name: "user1".to_string(),
-                    username: "user1".to_string(),
-                },
+                user: create_test_user("user1"),
                 trackable_item: TrackableItem {
                     common: TrackableItemFields {
+                        title: "Create CI/CD pipeline".to_string(),
                         milestone: None,
                         labels: Labels {
                             labels: vec![
@@ -208,15 +238,13 @@ mod tests {
                 },
             },
             TimeLog {
-                spent_at: now,
+                spent_at: now - Duration::hours(1),
                 time_spent: Duration::seconds(5400),
                 summary: Some("Fix a big bug".to_string()),
-                user: User {
-                    name: "user3".to_string(),
-                    username: "user3".to_string(),
-                },
+                user: create_test_user("user3"),
                 trackable_item: TrackableItem {
                     common: TrackableItemFields {
+                        title: "Coughing in my microphone causes segfault".to_string(),
                         labels: Labels {
                             labels: vec![
                                 Label {
@@ -231,6 +259,13 @@ mod tests {
                     },
                     kind: TrackableItemKind::MergeRequest(MergeRequest::default()),
                 },
+            },
+            TimeLog {
+                spent_at: now - Duration::minutes(15),
+                time_spent: Duration::seconds(7200),
+                summary: None,
+                user: create_test_user("user1"),
+                trackable_item: c4_issue.clone(),
             },
         ]
     }
@@ -288,15 +323,16 @@ mod tests {
 
     #[test]
     fn test_total_time_by_user_in_last_n_days_one_day() {
+        const NUMBER_OF_USERS: usize = 2;
         const N_DAYS: Duration = Duration::days(1);
-        const TIME_SPENT_USER_1: Duration = Duration::seconds(1800);
+        const TIME_SPENT_USER_1: Duration = Duration::seconds(9000);
         const TIME_SPENT_USER_3: Duration = Duration::seconds(5400);
 
         let time_logs = get_timelogs();
         let result = get_total_time_by_user_in_last_n_days(&time_logs, N_DAYS);
         let name_map = to_name_map(&result);
 
-        assert_eq!(name_map.len(), 2);
+        assert_eq!(name_map.len(), NUMBER_OF_USERS);
         assert_eq!(name_map.get("user1"), Some(&TIME_SPENT_USER_1));
         assert_eq!(name_map.get("user3"), Some(&TIME_SPENT_USER_3));
         assert!(!name_map.contains_key("user2"));
@@ -305,7 +341,7 @@ mod tests {
     #[test]
     fn test_total_time_by_user_in_last_n_days_seven_days() {
         const N_DAYS: Duration = Duration::days(7);
-        const TIME_SPENT_USER_1: Duration = Duration::seconds(5400);
+        const TIME_SPENT_USER_1: Duration = Duration::seconds(12600);
         const TIME_SPENT_USER_2: Duration = Duration::seconds(3600);
         const TIME_SPENT_USER_3: Duration = Duration::seconds(5400);
 
@@ -349,7 +385,7 @@ mod tests {
             .collect();
 
         let expected_map = std::collections::HashMap::from([
-            ("Documentation".to_string(), "01h 30m".to_string()),
+            ("Documentation".to_string(), "03h 30m".to_string()),
             ("Development".to_string(), "02h 00m".to_string()),
             ("Bug".to_string(), "01h 30m".to_string()),
             ("No label".to_string(), "01h 00m".to_string()),
@@ -378,9 +414,35 @@ mod tests {
             .collect();
 
         let expected_map = HashMap::from([
-            ("Documentation".to_string(), "01h 30m".to_string()),
+            ("Documentation".to_string(), "03h 30m".to_string()),
             ("Others".to_string(), "02h 30m".to_string()),
         ]);
         assert_eq!(label_time_spent_map, expected_map);
+    }
+
+    #[test]
+    fn test_populate_table_todays_timelogs() {
+        let time_logs = get_timelogs();
+        let (table, _) = populate_table_todays_timelogs(&time_logs);
+
+        assert!(table.is_sorted());
+
+        let now = Local::now().with_second(0).unwrap();
+        let log3 = now.to_rfc2822();
+        let log2 = (now - Duration::minutes(15)).to_rfc2822();
+        let log1 = (now - Duration::hours(1)).to_rfc2822();
+
+        let expected_table = [
+            [
+                &log1,
+                "user3",
+                "01h 30m",
+                "Fix a big bug",
+                "Coughing in my microphone causes segfault",
+            ],
+            [&log2, "user1", "02h 00m", "", "Create C4 model"],
+            [&log3, "user1", "00h 30m", "test", "Create CI/CD pipeline"],
+        ];
+        assert_eq!(table, expected_table);
     }
 }

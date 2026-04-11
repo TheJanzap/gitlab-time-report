@@ -84,6 +84,7 @@ fn main() -> Result<(), String> {
             );
 
             print_table::print_total_time_by_milestone(&project.time_logs);
+            print_table::print_todays_timelogs(&project.time_logs);
         }
     }
     Ok(())

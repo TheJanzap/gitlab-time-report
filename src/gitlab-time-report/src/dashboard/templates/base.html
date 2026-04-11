@@ -108,6 +108,11 @@
             overflow-x: auto;
         }
 
+        .table-no-data {
+            text-align: center;
+            font-weight: bold;
+        }
+
         .chart_elem, .flex-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
@@ -125,7 +130,7 @@
             margin: 0;
         }
 
-        #timestamp {
+        .timestamp {
             visibility: hidden;
         }
 
@@ -157,7 +162,7 @@
 <body>
 <header>
     <h1>$main_title</h1>
-    <span>Data generated on <span id="timestamp">$timestamp</span></span>
+    <span>Data generated on <span class="timestamp">$timestamp</span></span>
 </header>
 <main>
     <section>
@@ -166,42 +171,52 @@
         </div>
     </section>
     <section class="bg_section">
-        <h2>$sub_title_1</h2>
+        <h2>$sub_title_time_per_user</h2>
         <div class="table-wrapper">
-            $content_1
+            $table_time_per_user
+        </div>
+    </section>
+    <section class="bg_section">
+        <h2>$sub_title_time_logs_today</h2>
+        <div class="table-wrapper">
+            $table_time_logs_today
         </div>
     </section>
     <div class="flex-container">
         <section class="bg_section">
-            <h2>$sub_title_2</h2>
+            <h2>$sub_title_time_per_label</h2>
             <div class="table-wrapper">
-                $content_2
+                $table_time_per_label
             </div>
         </section>
         <section class="bg_section">
-            <h2>$sub_title_3</h2>
+            <h2>$sub_title_time_per_milestone</h2>
             <div class="table-wrapper">
-                $content_3
+                $table_time_per_milestone
             </div>
         </section>
     </div>
 </main>
 <script>
     function convertTimestampToLocal() {
-        const timestamp = document.getElementById("timestamp");
-        const old_timestamp = timestamp.textContent;
-        const date = new Date(old_timestamp);
-
-        timestamp.textContent = date.toLocaleString(navigator.languages[0], {
+        const mainLanguage = navigator.languages[0];
+        const format = {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
             hour: '2-digit',
             minute: '2-digit',
             timeZoneName: 'short'
-        });
+        };
 
-        timestamp.style.visibility = "visible";
+        const timestamps = document.querySelectorAll('.timestamp');
+        for (const timestamp of timestamps) {
+            const old_timestamp = timestamp.textContent;
+            const date = new Date(old_timestamp);
+
+            timestamp.textContent = date.toLocaleString(mainLanguage, format);
+            timestamp.style.visibility = "visible";
+        }
     }
 
     function makeTablesSortable(selector = 'table') {
