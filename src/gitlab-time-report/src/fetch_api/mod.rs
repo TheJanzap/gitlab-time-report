@@ -84,12 +84,7 @@ fn fetch_project_time_logs_impl(
         // Use serde_path_to_error to get the field where the deserialization failed.
         let model: ApiResponse = serde_path_to_error::deserialize(deserializer)?;
 
-        let project = model.data.project.ok_or_else(|| match &model.errors {
-            // A GraphQL error occurred.
-            Some(errors) => QueryError::GraphQlError(errors.errors[0].message.clone()),
-            // The API returned `"project":null`, the project doesn't exist or has been accessed without a valid access token.
-            None => QueryError::ProjectNotFound(format!("{}/{}", options.host, options.path)),
-        })?;
+        let project = validate_model(model, options)?;
 
         // Update the pagination information
         has_next_page = project.timelogs.page_info.has_next_page;
@@ -104,6 +99,9 @@ fn fetch_project_time_logs_impl(
         // Accumulate timelogs
         time_logs.extend(project.timelogs.nodes);
     }
+
+    // Remove the `Option` from all time logs. There should be no `None` anyway.
+    let time_logs = time_logs.into_iter().flatten().collect();
 
     Ok(Project {
         name,
@@ -135,6 +133,23 @@ fn build_query_payload(
     })
 }
 
+/// Validates the response from the GitLab API by checking for GraphQL errors, and if the project can be accessed.
+fn validate_model(
+    model: ApiResponse,
+    options: &FetchOptions,
+) -> Result<api_model::Project, QueryError> {
+    // Check for GraphQL errors. If there are any, return the first one.
+    if let Some(errors) = &model.errors {
+        return Err(QueryError::GraphQlError(errors[0].message.clone()));
+    }
+
+    let project = model.data.project.ok_or_else(|| {
+        // The API returned `"project":null`, the project doesn't exist or has been accessed without a valid access token.
+        QueryError::ProjectNotFound(format!("{}/{}", options.host, options.path))
+    })?;
+    Ok(project)
+}
+
 /// Errors that can occur during an API query.
 #[derive(Debug, Error)]
 pub enum QueryError {
@@ -157,30 +172,27 @@ mod tests {
     use super::*;
     use crate::fetch_api::http_requests::MockHttpFetcher;
 
+    const URL: &str = "https://gitlab.com/test-user/test-project";
+    const PROJECT_NAME: &str = "Test Repo";
+
     #[test]
     fn fetch_project_correctly() {
-        let input = "https://gitlab.ost.ch/test-user/test-project";
-        let output = "Test".to_string();
-
-        let options = FetchOptions::new(input, None).unwrap();
+        let options = FetchOptions::new(URL, None).unwrap();
         let mut mock = MockHttpFetcher::new();
         mock.expect_http_post_request().return_const({
-            Ok(r#"{"data": { "project": { "name": "Test", "timelogs": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "totalSpentTime": "20", "nodes": []}}}}"#.into())
+            Ok(r#"{"data": { "project": { "name": "Test Repo", "timelogs": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "totalSpentTime": "20", "nodes": []}}}}"#.into())
         });
 
         let result = fetch_project_time_logs_impl(&options, &mock);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap().name, output);
+        assert_eq!(result.unwrap().name, PROJECT_NAME);
     }
 
     #[test]
     fn fetch_project_with_pagination() {
-        const JSON_TEMPLATE: &str = r#"{"data":{"project":{"name":"Test","timelogs":{"pageInfo":{"hasNextPage":$NEXT,"endCursor":"$CURSOR"}, "totalSpentTime": "20", "nodes":[]}}}}"#;
+        const JSON_TEMPLATE: &str = r#"{"data":{"project":{"name":"Test Repo","timelogs":{"pageInfo":{"hasNextPage":$NEXT,"endCursor":"$CURSOR"}, "totalSpentTime": "20", "nodes":[]}}}}"#;
 
-        let input = "https://gitlab.ost.ch/test-user/test-project";
-        let output = "Test".to_string();
-
-        let options = FetchOptions::new(input, None).unwrap();
+        let options = FetchOptions::new(URL, None).unwrap();
         let mut mock = MockHttpFetcher::new();
 
         // Mock call when returning the first page
@@ -218,7 +230,7 @@ mod tests {
 
         let result = fetch_project_time_logs_impl(&options, &mock);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap().name, output);
+        assert_eq!(result.unwrap().name, PROJECT_NAME);
     }
 
     #[test]
@@ -236,5 +248,19 @@ mod tests {
             result.unwrap_err(),
             QueryError::ProjectNotFound(_)
         ));
+    }
+
+    #[test]
+    fn fetch_with_fine_grained_access_token() {
+        const TOKEN: &str = "glpat-fine-grained-access-token";
+        let options = FetchOptions::new(URL, Some(TOKEN.to_string())).unwrap();
+        let mut mock = MockHttpFetcher::new();
+        mock.expect_http_post_request().return_const({
+            Ok(r#"{"errors":[{"message": "Access denied: This operation doesn't support fine-grained personal access tokens.","locations":[{"line": 11, "column": 9}],"path": ["project", "timelogs", "nodes", 0, "spentAt"]}],"data":{"project":null}}"#.into())
+        });
+
+        let result = fetch_project_time_logs_impl(&options, &mock);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), QueryError::GraphQlError(_)));
     }
 }

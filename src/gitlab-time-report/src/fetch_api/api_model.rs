@@ -19,8 +19,9 @@ pub(super) struct Project {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TimeLogs {
-    /// The actual time logs
-    pub(super) nodes: Vec<TimeLog>,
+    /// The actual time logs. On some GraphQL errors, `nodes` exists but is empty, so `TimeLog`
+    /// needs to be wrapped in `Option`.
+    pub(super) nodes: Vec<Option<TimeLog>>,
     /// Pagination for the GitLab API
     pub(super) page_info: PageInfo,
     /// Total Time spent on the project
@@ -44,7 +45,7 @@ pub(super) struct ApiResponse {
     /// The response data.
     pub(super) data: Data,
     /// Possible GraphQL errors that occurred in the query.
-    pub(super) errors: Option<GraphQlErrors>,
+    pub(super) errors: Option<Vec<GraphQlError>>,
 }
 
 /// Response data of the GitLab API.
@@ -52,12 +53,6 @@ pub(super) struct ApiResponse {
 pub(super) struct Data {
     /// The data of the project if it exists and is accessed with the right permissions.
     pub(super) project: Option<Project>,
-}
-
-/// A list of GraphQL errors that occurred during the query.
-#[derive(Debug, Deserialize)]
-pub(super) struct GraphQlErrors {
-    pub(super) errors: Vec<GraphQlError>,
 }
 
 /// The actual GraphQL error.
