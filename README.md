@@ -48,6 +48,9 @@ permission can be used.
 gitlab-time-report-cli https://gitlab.com/username/my-private-repo --token myAccessToken
 ```
 
+GitLab has introduced [fine-grained personal access tokens]. As of April 2026, these can not be used to fetch time logs
+and are thus **not compatible** with GitLab Time-Report.
+
 ## Create charts
 
 GitLab Time-Report offers various charts powered by [Apache Echarts].
@@ -318,6 +321,8 @@ details.
 [Group access token]: https://docs.gitlab.com/user/group/settings/group_access_tokens/
 
 [Project access token]: https://docs.gitlab.com/user/project/settings/project_access_tokens/
+
+[fine-grained personal access tokens]: https://docs.gitlab.com/auth/tokens/fine_grained_access_tokens/
 
 [CI/CD variable]: https://docs.gitlab.com/ci/variables/#for-a-project
 
