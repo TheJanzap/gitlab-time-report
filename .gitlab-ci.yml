@@ -7,6 +7,12 @@ variables:
   RELEASE_BIN_LINUX: "${BINARY_NAME}-linux-x86_64-gnu"
   RELEASE_BIN_WINDOWS: "${BINARY_NAME}-windows-x86_64.exe"
   RELEASE_BIN_MACOS: "${BINARY_NAME}-macos-x86_64"
+  RELEASE_DRY_RUN:
+    description: "Whether to run the release pipeline without creating an actual release."
+    value: "false"
+    options:
+      - "true"
+      - "false"
 
 stages:
   # Builds all the Rust binaries
@@ -106,6 +112,7 @@ stages:
     # Show how much sccache has helped
     - sccache --show-stats
   rules:
+    - if: $RELEASE_DRY_RUN == "true"
     # Run if a new Git tag is created
     - if: $CI_COMMIT_TAG
 
@@ -421,6 +428,10 @@ release:create:
 release:crates.io:
   stage: release
   extends: .rust-template
-  script: cargo publish --workspace
+  script:
+    - if [ "$RELEASE_DRY_RUN" = "true" ]; then
+      arg="--dry-run"; fi;
+    - cargo publish --workspace $arg
   rules:
+    - if: $RELEASE_DRY_RUN == "true"
     - if: $CI_COMMIT_TAG
