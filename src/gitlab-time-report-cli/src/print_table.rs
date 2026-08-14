@@ -6,7 +6,7 @@ use cli_table::format::Justify;
 use cli_table::{Cell, CellStruct, Style, Table, TableStruct, print_stdout};
 use gitlab_time_report::model::{Label, TimeLog};
 use gitlab_time_report::tables;
-use regex::Regex;
+use regex::regex;
 use std::collections::HashSet;
 
 /// Create a table from cells and column titles.
@@ -29,7 +29,7 @@ fn print_table(table: TableStruct) {
 /// Transform a `Vec<Vec<String>>` from the Library to a `Vec<Vec<CellStruct>>`
 /// used by the `cli_table` crate. The first column is left-aligned, all others right-aligned.
 fn to_cell_vec(table: Vec<Vec<String>>) -> Vec<Vec<CellStruct>> {
-    let is_duration = Regex::new(r"^[0-9]{2,}h [0-9]{2}m$").expect("Regex pattern should compile");
+    let is_duration = regex!(r"^[0-9]{2,}h [0-9]{2}m$");
     table
         .into_iter()
         .map(|row| {

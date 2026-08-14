@@ -1,6 +1,6 @@
 # Global variables
 variables:
-  RUST_VERSION: "1.94"
+  RUST_VERSION: "1.97"
   RUST_CONTAINER: "rust:$RUST_VERSION"
   BINARY_NAME: "gitlab-time-report-cli"
   PACKAGE_REGISTRY_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/gitlab-time-report/$CI_COMMIT_TAG"
@@ -242,7 +242,7 @@ test:coverage:
     CARGO_CRATES: cargo-tarpaulin
   script:
     # Run code coverage and generate HTML and XML
-    - cargo tarpaulin --workspace --engine llvm --no-fail-fast --out html --out xml
+    - cargo tarpaulin --workspace --all-features --engine llvm --no-fail-fast --out html --out xml
   artifacts:
     paths:
       # Store HTML report
