@@ -134,6 +134,12 @@ build:debug:
     paths:
       # Store debug application for reuse in doc:gitlab-time-report job
       - target/debug/$BINARY_NAME
+  rules:
+    # Always build on main for doc:gitlab-time-report
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # Otherwise, only build on changes
+    - changes:
+        *changes
 
 # Create release build for Windows
 build:windows:
@@ -330,16 +336,19 @@ pages:
     - job: doc:rust-documentation
       optional: true
     - job: doc:gitlab-time-report
+      optional: true
   pages: true
   script:
     # Create Pages folders if they don't exist
     - mkdir -p public
     - mkdir -p public/code-coverage
-    # Download current GitLab Pages deployment
-    - curl --location --output pages.zip
-      "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_DEFAULT_BRANCH/download?job=$CI_JOB_NAME&job_token=$CI_JOB_TOKEN" || true
+    # Download current GitLab Pages deployment. Unfortunately, we need to do some curl trickery to distinguish between
+    # a 200 and 404. GitLab returns a JSON on 404, which also gets saved as "pages.zip".
+    - http_code="$(curl --location --output pages.zip --write-out '%{http_code}'
+      $CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_DEFAULT_BRANCH/download?job=$CI_JOB_NAME&job_token=$CI_JOB_TOKEN)"
     # Check if the download was successful. If there's no GitLab Pages deployment, the download will fail.
-    - if [ -f pages.zip ]; then
+    - if [ $http_code == 200 ]; then
+      echo "Unzipping GitLab Pages files...";
       unzip -qo pages.zip; fi
 
     # Deploy HTML code coverage report if the job ran
@@ -348,8 +357,9 @@ pages:
     # Deploy HTML Rust code documentation if the job ran
     - if [ -d target/doc ]; then
       cp -fr target/doc public/code-doc; fi
-    # Deploy dashboard of the repository
-    - mv gitlab-time-report_dashboard.html public/dashboard-project.html
+    # Deploy dashboard of the repository if the job ran
+    - if [ -f gitlab-time-report_dashboard.html ]; then
+      mv gitlab-time-report_dashboard.html public/dashboard-project.html; fi
     # Deploy sample dashboard
     - mv docs/dashboard-sample.html public/dashboard-sample.html
   rules:
