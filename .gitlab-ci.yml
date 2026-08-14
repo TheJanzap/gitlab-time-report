@@ -35,39 +35,52 @@ stages:
     CARGO_HOME: $CI_PROJECT_DIR/.cargo
     # Display color in Cargo output
     CARGO_TERM_COLOR: always
-    # Enable incremental builds
-    CARGO_INCREMENTAL: 1
-  # Cache configuration to speed up builds by reusing dependencies
+    # Disable incremental builds. sccache needs this disabled. https://github.com/mozilla/sccache#rust
+    CARGO_INCREMENTAL: 0
+    # Enable sccache
+    RUSTC_WRAPPER: sccache
+    # Set sccache directory
+    SCCACHE_DIR: $CI_PROJECT_DIR/.sccache
+    # Limit sccache size to 2GB
+    SCCACHE_CACHE_SIZE: 2G
+
   cache: &rust-cache
-    # Use Cargo.lock as the cache key to reuse cache across branches
-    key:
-      files:
-        - Cargo.lock
-      prefix: rust-$RUST_VERSION
-    paths:
-      # Use recommended cargo cache paths
-      # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
-      - .cargo/.crates.toml
-      - .cargo/.crates2.json
-      - .cargo/bin/
-      - .cargo/registry/index/
-      - .cargo/registry/cache/
-      - .cargo/git/db/
-      # Cache compiled artifacts
-      - target/
+    # Cache the dependencies collected by Cargo
+    - key:
+        prefix: cargo-$RUST_VERSION
+        files:
+          # Use Cargo.lock as the cache key to reuse cache across branches
+          - Cargo.lock
+      paths:
+        # Use recommended cargo cache paths
+        # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
+        - .cargo/.crates.toml
+        - .cargo/.crates2.json
+        - .cargo/bin/
+        - .cargo/registry/index/
+        - .cargo/registry/cache/
+        - .cargo/git/db/
+    # Cache build artifacts with sccache
+    - key:
+        prefix: sccache-$RUST_VERSION
+        files:
+          - Cargo.lock
+      paths:
+        - $SCCACHE_DIR
   before_script:
     # Add Cargo `bin` directory to PATH. Needs to be set here, as PATH doesn't get expanded inside `variables:`
     - export PATH="$CARGO_HOME/bin:$PATH"
     # Install packages if the APT_PACKAGES variable is set by the job
     - if [ -v APT_PACKAGES ]; then
       apt-get -qq update && apt-get -qq install $APT_PACKAGES; fi
-    # Install cargo packages if the CARGO_CRATES variable is set by the job
     # Install cargo-bininstall to download pre-built binaries instead of compiling them each time
-    - if [ -v CARGO_CRATES ]; then
     # Only install if not already installed
     - if ! [ -f $CARGO_HOME/bin/cargo-binstall ]; then
       curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash; fi
-    - cargo binstall --no-confirm $CARGO_CRATES; fi
+    # Install cargo packages if the CARGO_CRATES variable is set by the job
+    - if [ -v CARGO_CRATES ]; then
+      cargo binstall --no-confirm $CARGO_CRATES; fi
+    - cargo binstall --no-confirm sccache
   artifacts:
     # Let all Rust artifacts expire to save storage
     expire_in: 1 week
@@ -90,6 +103,8 @@ stages:
     - rustup target add $TARGET
     # Build release build for the target platform
     - cargo $CARGO_SUBCOMMAND build --workspace --release --target $TARGET
+    # Show how much sccache has helped
+    - sccache --show-stats
   rules:
     # Run if a new Git tag is created
     - if: $CI_COMMIT_TAG
@@ -106,6 +121,8 @@ build:debug:
   script:
     # Building with the test profile also builds the test cases
     - cargo build --workspace --profile test
+    # Show how much sccache has helped
+    - sccache --show-stats
   artifacts:
     paths:
       # Store debug application for reuse in doc:gitlab-time-report job
@@ -174,6 +191,8 @@ lint:clippy:
   script:
     - rustup component add clippy
     - cargo clippy --workspace --all-targets -- -D warnings
+    # Show how much sccache has helped
+    - sccache --show-stats
 
 # Run the rustfmt linter to check formatting
 lint:rustfmt:
@@ -204,6 +223,8 @@ test:
   script:
     # Run all tests, create JSON output and parse it to JUnit format
     - cargo test --workspace -- -Z unstable-options --format json --report-time | cargo2junit > test-results.xml
+    # Show how much sccache has helped
+    - sccache --show-stats
   artifacts:
     when: always
     reports:
@@ -246,6 +267,8 @@ doc:rust-documentation:
     policy: pull
   script:
     - cargo doc --workspace --no-deps --document-private-items
+    # Show how much sccache has helped
+    - sccache --show-stats
   artifacts:
     paths:
       - target/doc
