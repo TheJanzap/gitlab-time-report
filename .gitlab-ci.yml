@@ -59,20 +59,21 @@ stages:
     # Add Cargo `bin` directory to PATH. Needs to be set here, as PATH doesn't get expanded inside `variables:`
     - export PATH="$CARGO_HOME/bin:$PATH"
     # Install packages if the APT_PACKAGES variable is set by the job
-    - if [ -v APT_PACKAGES ]; then apt-get -qq update && apt-get -qq install $APT_PACKAGES; fi
+    - if [ -v APT_PACKAGES ]; then
+      apt-get -qq update && apt-get -qq install $APT_PACKAGES; fi
     # Install cargo packages if the CARGO_CRATES variable is set by the job
     # Install cargo-bininstall to download pre-built binaries instead of compiling them each time
     - if [ -v CARGO_CRATES ]; then
-      curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash;
-      cargo binstall --no-confirm $CARGO_CRATES; fi
+    # Only install if not already installed
+    - if ! [ -f $CARGO_HOME/bin/cargo-binstall ]; then
+      curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash; fi
+    - cargo binstall --no-confirm $CARGO_CRATES; fi
   artifacts:
     # Let all Rust artifacts expire to save storage
     expire_in: 1 week
   rules:
-    # Always run on main branch to generate files for GitLab Pages deployment
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    # On feature branches, run only when files in 'src' or root Cargo files change
-    - changes:
+    # Run only when files in 'src' or root Cargo files change
+    - changes: &changes
         - src/**/*
         - Cargo.lock
         - Cargo.toml
@@ -249,8 +250,10 @@ doc:rust-documentation:
     paths:
       - target/doc
   rules:
-    # Only build the documentation on the main branch
+    # Only build the documentation on the main branch when the code changes
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        *changes
 
 
 ###########################################
@@ -260,7 +263,7 @@ doc:rust-documentation:
 # Create the dashboard and the time tracking charts
 doc:gitlab-time-report:
   stage: doc
-  # Download gitlab-time-report debug build from the current pipeline, if running
+  # Download gitlab-time-report debug build from the current pipeline
   needs: [ "build:debug" ]
   # Official Debian image, with wget and CA certificates preinstalled
   image: buildpack-deps:curl
@@ -290,16 +293,31 @@ doc:gitlab-time-report:
 # Deploy resources to GitLab Pages
 pages:
   stage: deploy
-  needs: [ "doc:rust-documentation", "doc:gitlab-time-report", "test:coverage" ]
+  image: curlimages/curl:latest
+  needs:
+    - job: test:coverage
+      optional: true
+    - job: doc:rust-documentation
+      optional: true
+    - job: doc:gitlab-time-report
   pages: true
   script:
     # Create Pages folders if they don't exist
     - mkdir -p public
     - mkdir -p public/code-coverage
-    # Deploy HTML code coverage report
-    - mv tarpaulin-report.html public/code-coverage/index.html
-    # Deploy HTML Rust code documentation
-    - mv target/doc public/code-doc
+    # Download current GitLab Pages deployment
+    - curl --location --output pages.zip
+      "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_DEFAULT_BRANCH/download?job=$CI_JOB_NAME&job_token=$CI_JOB_TOKEN" || true
+    # Check if the download was successful. If there's no GitLab Pages deployment, the download will fail.
+    - if [ -f pages.zip ]; then
+      unzip -qo pages.zip; fi
+
+    # Deploy HTML code coverage report if the job ran
+    - if [ -f tarpaulin-report.html ]; then
+      mv -f tarpaulin-report.html public/code-coverage/index.html; fi
+    # Deploy HTML Rust code documentation if the job ran
+    - if [ -d target/doc ]; then
+      cp -fr target/doc public/code-doc; fi
     # Deploy dashboard of the repository
     - mv gitlab-time-report_dashboard.html public/dashboard-project.html
     # Deploy sample dashboard
