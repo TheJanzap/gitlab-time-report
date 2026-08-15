@@ -171,6 +171,7 @@ pub enum QueryError {
 mod tests {
     use super::*;
     use crate::fetch_api::http_requests::MockHttpFetcher;
+    use std::assert_matches;
 
     const URL: &str = "https://gitlab.com/test-user/test-project";
     const PROJECT_NAME: &str = "Test Repo";
@@ -244,10 +245,7 @@ mod tests {
 
         let result = fetch_project_time_logs_impl(&options, &mock);
         assert!(result.is_err());
-        assert!(matches!(
-            result.unwrap_err(),
-            QueryError::ProjectNotFound(_)
-        ));
+        assert_matches!(result.unwrap_err(), QueryError::ProjectNotFound(_));
     }
 
     #[test]
@@ -261,6 +259,6 @@ mod tests {
 
         let result = fetch_project_time_logs_impl(&options, &mock);
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), QueryError::GraphQlError(_)));
+        assert_matches!(result.unwrap_err(), QueryError::GraphQlError(_));
     }
 }

@@ -261,6 +261,8 @@ mod tests {
     use chrono::{Duration, Local, TimeDelta};
 
     const NUMBER_OF_LOGS: usize = 7;
+    const EXCESSIVE_HOURS_LIMIT: u16 = 10;
+
     fn get_time_logs() -> [TimeLog; NUMBER_OF_LOGS] {
         [
             TimeLog {
@@ -327,8 +329,6 @@ mod tests {
 
     #[test]
     fn test_excessive_hours_validator() {
-        const EXCESSIVE_HOURS_LIMIT: u16 = 10;
-
         let time_logs = get_time_logs();
         let expected_problem = ValidationProblem::ExcessiveHours {
             max_hours: EXCESSIVE_HOURS_LIMIT,
@@ -420,8 +420,6 @@ mod tests {
 
     #[test]
     fn test_all_validators() {
-        const EXCESSIVE_HOURS_LIMIT: u16 = 10;
-
         let time_logs = get_time_logs();
         let mut validator = TimeLogValidator::new()
             .with_validator(ExcessiveHoursValidator::new(EXCESSIVE_HOURS_LIMIT))
@@ -434,27 +432,68 @@ mod tests {
         };
 
         let results = validator.validate(&time_logs);
-
         assert_eq!(results.len(), NUMBER_OF_LOGS);
+
+        assert!(results[0].problems.is_empty());
         assert!(results[0].is_valid());
 
         assert_eq!(results[1].problems.len(), 1);
         assert!(results[1].has_problems(&excessive_hours_validator));
+        assert!(!results[1].is_valid());
 
         assert_eq!(results[2].problems.len(), 1);
         assert!(results[2].has_problems(&ValidationProblem::MissingSummary));
+        assert!(!results[2].is_valid());
 
         assert_eq!(results[3].problems.len(), 1);
         assert!(results[3].has_problems(&ValidationProblem::FutureDate));
+        assert!(!results[3].is_valid());
 
         assert_eq!(results[4].problems.len(), 1);
         assert!(results[4].has_problems(&ValidationProblem::DuplicateEntry));
+        assert!(!results[4].is_valid());
 
         assert_eq!(results[5].problems.len(), 3);
         assert!(results[5].has_problems(&excessive_hours_validator));
         assert!(results[5].has_problems(&ValidationProblem::MissingSummary));
         assert!(results[5].has_problems(&ValidationProblem::FutureDate));
+        assert!(!results[5].is_valid());
 
+        assert!(results[6].problems.is_empty());
         assert!(results[6].is_valid());
+    }
+
+    #[test]
+    fn test_has_problems_is_true_on_correct_problem() {
+        let mut validator = TimeLogValidator::new()
+            .with_validator(ExcessiveHoursValidator::new(EXCESSIVE_HOURS_LIMIT))
+            .with_validator(HasSummaryValidator)
+            .with_validator(NoFutureDateValidator)
+            .with_validator(DuplicatesValidator::new());
+
+        let excessive_hours_validator = ValidationProblem::ExcessiveHours {
+            max_hours: EXCESSIVE_HOURS_LIMIT,
+        };
+
+        let time_logs = get_time_logs();
+        let results = validator.validate(&time_logs);
+
+        // Test time log without problems
+        assert!(!results[0].has_problems(&excessive_hours_validator));
+        assert!(!results[0].has_problems(&ValidationProblem::MissingSummary));
+        assert!(!results[0].has_problems(&ValidationProblem::FutureDate));
+        assert!(!results[0].has_problems(&ValidationProblem::DuplicateEntry));
+
+        // Test time log with one problem
+        assert!(results[1].has_problems(&excessive_hours_validator));
+        assert!(!results[1].has_problems(&ValidationProblem::MissingSummary));
+        assert!(!results[1].has_problems(&ValidationProblem::FutureDate));
+        assert!(!results[1].has_problems(&ValidationProblem::DuplicateEntry));
+
+        // Test time log with multiple problems
+        assert!(results[5].has_problems(&excessive_hours_validator));
+        assert!(results[5].has_problems(&ValidationProblem::MissingSummary));
+        assert!(results[5].has_problems(&ValidationProblem::FutureDate));
+        assert!(!results[5].has_problems(&ValidationProblem::DuplicateEntry));
     }
 }

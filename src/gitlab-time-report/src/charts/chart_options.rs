@@ -8,6 +8,7 @@ use thiserror::Error;
 
 /// Contains all information needed for rendering a chart.
 /// Create a new instance with [`RenderOptions::new()`].
+#[derive(Debug)]
 pub struct RenderOptions<'a> {
     /// The width of the rendered chart.
     pub(super) width: u16,
@@ -180,6 +181,7 @@ pub enum ChartSettingError {
 mod tests {
     use super::*;
     use crate::charts::tests::*;
+    use std::assert_matches;
 
     const WIDTH: u16 = 600;
     const HEIGHT: u16 = 600;
@@ -244,7 +246,7 @@ mod tests {
         );
         let result = chart_options;
         assert!(result.is_err());
-        assert!(matches!(result, Err(ChartSettingError::FileNotFound)));
+        assert_matches!(result, Err(ChartSettingError::FileNotFound));
     }
 
     #[test]
@@ -304,8 +306,9 @@ mod tests {
         );
         let result = chart_options;
         assert!(result.is_err());
-        assert!(
-            matches!(result.unwrap_err(), ChartSettingError::InvalidInputData(_)),
+        assert_matches!(
+            result.unwrap_err(),
+            ChartSettingError::InvalidInputData(_),
             "Should not allow empty time logs"
         );
     }
@@ -322,8 +325,9 @@ mod tests {
         );
         let result = chart_options;
         assert!(result.is_err());
-        assert!(
-            matches!(result.unwrap_err(), ChartSettingError::InvalidInputData(_)),
+        assert_matches!(
+            result.unwrap_err(),
+            ChartSettingError::InvalidInputData(_),
             "Should not allow zero weeks per sprint"
         );
     }
@@ -340,8 +344,9 @@ mod tests {
         );
         let result = chart_options;
         assert!(result.is_err());
-        assert!(
-            matches!(result.unwrap_err(), ChartSettingError::InvalidInputData(_)),
+        assert_matches!(
+            result.unwrap_err(),
+            ChartSettingError::InvalidInputData(_),
             "Should not allow zero hours per person"
         );
     }
@@ -358,8 +363,9 @@ mod tests {
         );
         let result = chart_options;
         assert!(result.is_err());
-        assert!(
-            matches!(result.unwrap_err(), ChartSettingError::InvalidInputData(_)),
+        assert_matches!(
+            result.unwrap_err(),
+            ChartSettingError::InvalidInputData(_),
             "Should not allow zero sprints"
         );
     }
@@ -376,8 +382,9 @@ mod tests {
         );
         let result = chart_options;
         assert!(result.is_err());
-        assert!(
-            matches!(result.unwrap_err(), ChartSettingError::InvalidInputData(_)),
+        assert_matches!(
+            result.unwrap_err(),
+            ChartSettingError::InvalidInputData(_),
             "Should not allow start date in the future"
         );
     }

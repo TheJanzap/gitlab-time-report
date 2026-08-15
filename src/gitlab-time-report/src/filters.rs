@@ -181,6 +181,7 @@ mod tests {
     use crate::model::{
         Issue, Labels, MergeRequest, TrackableItem, TrackableItemFields, TrackableItemKind,
     };
+    use std::assert_matches;
 
     const NUMBER_OF_LOGS: usize = 5;
 
@@ -384,34 +385,26 @@ mod tests {
         assert_eq!(result.len(), NUMBER_OF_ITEMS);
 
         let item_1 = result.pop_first().unwrap();
-        assert_eq!(
-            std::mem::discriminant(&item_1.0.kind),
-            std::mem::discriminant(&TrackableItemKind::Issue(Issue::default()))
-        );
+        assert_matches!(item_1.0.kind, TrackableItemKind::Issue(_));
+
         assert_eq!(item_1.0.common.id, 0);
         assert_eq!(item_1.1.len(), NUMBER_OF_ISSUE_0);
 
         let item_2 = result.pop_first().unwrap();
-        assert_eq!(
-            std::mem::discriminant(&item_2.0.kind),
-            std::mem::discriminant(&TrackableItemKind::MergeRequest(MergeRequest::default()))
-        );
+        assert_matches!(&item_2.0.kind, TrackableItemKind::MergeRequest(_));
+
         assert_eq!(item_2.0.common.id, 0);
         assert_eq!(item_2.1.len(), NUMBER_OF_MR_0);
 
         let item_3 = result.pop_first().unwrap();
-        assert_eq!(
-            std::mem::discriminant(&item_3.0.kind),
-            std::mem::discriminant(&TrackableItemKind::Issue(Issue::default()))
-        );
+        assert_matches!(item_3.0.kind, TrackableItemKind::Issue(_));
+
         assert_eq!(item_3.0.common.id, 1);
         assert_eq!(item_3.1.len(), NUMBER_OF_ISSUE_1);
 
         let item_4 = result.pop_first().unwrap();
-        assert_eq!(
-            std::mem::discriminant(&item_4.0.kind),
-            std::mem::discriminant(&TrackableItemKind::MergeRequest(MergeRequest::default()))
-        );
+        assert_matches!(item_4.0.kind, TrackableItemKind::MergeRequest(_));
+
         assert_eq!(item_4.0.common.id, 1);
         assert_eq!(item_4.1.len(), NUMBER_OF_MR_1);
     }

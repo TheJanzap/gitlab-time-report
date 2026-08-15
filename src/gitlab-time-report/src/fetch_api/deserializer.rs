@@ -74,6 +74,7 @@ impl<'de> Deserialize<'de> for TrackableItem {
 mod tests {
     use super::*;
     use crate::model::User;
+    use std::assert_matches;
 
     #[test]
     fn deserialize_issue() {
@@ -88,7 +89,7 @@ mod tests {
             deserialized.common.total_time_spent,
             chrono::Duration::seconds(10800)
         );
-        assert!(matches!(deserialized.kind, TrackableItemKind::Issue(_)));
+        assert_matches!(deserialized.kind, TrackableItemKind::Issue(_));
     }
 
     #[test]
@@ -111,10 +112,7 @@ mod tests {
             deserialized.common.total_time_spent,
             chrono::Duration::seconds(1800)
         );
-        assert!(matches!(
-            deserialized.kind,
-            TrackableItemKind::MergeRequest(_)
-        ));
+        assert_matches!(deserialized.kind, TrackableItemKind::MergeRequest(_));
 
         if let TrackableItemKind::MergeRequest(deserialized_mr) = deserialized.kind {
             assert_eq!(deserialized_mr.reviewers, reviewers);

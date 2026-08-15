@@ -29,6 +29,7 @@ impl HtmlWriter for FileHtmlWriter {
 }
 
 /// The JavaScript extracted from the Charming-generated HTML files.
+#[derive(Debug)]
 struct ExtractedChartJs {
     /// The function that defines the chart.
     chart: String,
@@ -317,6 +318,7 @@ mod tests {
         Issue, MergeRequest, TrackableItem, TrackableItemFields, TrackableItemKind, User, UserNodes,
     };
     use chrono::{Duration, Local, SecondsFormat};
+    use std::assert_matches;
     use std::sync::{Arc, Mutex};
     use tempfile::tempdir;
 
@@ -525,9 +527,7 @@ mod tests {
         "#;
         let result = extract_charming_chart_js(html, "chart-0");
         let error_msg = "No <script> tag found in chart HTML";
-        assert!(
-            matches!(result,Err(HtmlError::ChartExtraction(err_msg)) if err_msg.eq(&error_msg))
-        );
+        assert_matches!(result, Err(HtmlError::ChartExtraction(err_msg)) if err_msg.eq(&error_msg));
     }
 
     #[test]
