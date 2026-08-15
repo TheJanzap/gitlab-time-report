@@ -282,6 +282,8 @@ doc:rust-documentation:
     - cargo doc --workspace --no-deps --document-private-items
     # Show how much sccache has helped
     - sccache --show-stats
+    # Remove lock file that may not be deleted reliably. Causes permission problems in later stages
+    - rm -f target/doc/.lock
   artifacts:
     paths:
       - target/doc
