@@ -164,6 +164,7 @@ fn create_html_string(
     let html = TEMPLATE
         .replace("$main_title", main_title)
         .replace("$timestamp", &create_timestamp())
+        .replace("$crate_version", env!("CARGO_PKG_VERSION"))
         .replace("$sub_title_time_per_user", "Time Spent per User:")
         .replace("$table_time_per_user", &timeframe_by_user_table.to_html_string())
         .replace("$sub_title_time_logs_today", "Today's Time Logs:")

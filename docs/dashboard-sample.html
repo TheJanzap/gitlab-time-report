@@ -5,6 +5,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Sample Repository Time Tracking Dashboard</title>
     <link href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iRWJlbmVfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI5LjguMywgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDIuMS4xIEJ1aWxkIDMpICAtLT4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLnN0MCB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLnN0MSB7CiAgICAgICAgZmlsbDogIzFlMWYyOTsKICAgICAgICBzdHJva2U6ICMxZTFmMjk7CiAgICAgICAgc3Ryb2tlLWxpbmVqb2luOiByb3VuZDsKICAgICAgICBzdHJva2Utd2lkdGg6IDEuNXB4OwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8Y2lyY2xlIGNsYXNzPSJzdDAiIGN4PSIxNS44MyIgY3k9IjE1Ljg2IiByPSIxNS4zOSIvPgogIDxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik0xMy41MywxNi41OWw0LjItNy4yM2MtMy4yOS0xLjkxLTcuNTctMS4zOS0xMC4yOCwxLjUtMy4xNywzLjM2LTMuMDEsOC42Ni4zNSwxMS44MywzLjM2LDMuMTcsOC42NiwzLjAxLDExLjgzLS4zNS41OC0uNjIsMS4wNS0xLjMsMS40MS0yLjAybC03LjUxLTMuNzNaIi8+CiAgPHBhdGggY2xhc3M9InN0MSIgZD0iTTE4LjcsMTQuNjRsNi42OCwzLjMyYzEuMTctMy4wNy40Ni02LjY3LTIuMDgtOS4wNy0uMjctLjI1LS41Ni0uNDgtLjg1LS42OWwtMy43NCw2LjQ0WiIvPgo8L3N2Zz4="
+          id="favicon"
           rel="icon"
           type="image/x-icon">
     <style>
@@ -103,6 +104,15 @@
             background-color: var(--bg-color-light);
         }
 
+        .flex {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .creator-link img {
+            height: 1rem;
+        }
+
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -144,7 +154,7 @@
                 height: 130vw;
             }
 
-            .flex-container {
+            .flex-container, .flex {
                 display: block;
             }
 
@@ -157,7 +167,16 @@
 <body>
 <header>
     <h1>Sample Repository Time Tracking Dashboard</h1>
-    <span>Data generated on <span class="timestamp">2025-12-21T19:51:26.599260160+01:00</span></span>
+    <div class="flex">
+        <span>Data generated on <span class="timestamp">2026-07-22T16:36:31.023301300+02:00</span></span>
+        <div class="creator-link">
+            Created with
+            <a target="blank" rel="noopener noreferrer" href="https://gitlab.com/gitlab-time-report/gitlab-time-report">
+                GitLab Time-Report 1.3.1
+                <img src="" class="logo" alt="GitLab Time-Report Logo">
+            </a>
+        </div>
+    </div>
 </header>
 <main>
     <section>
@@ -322,12 +341,19 @@
         return prefersDarkScheme ? 'dark' : '';
     }
 
+    function setLogo() {
+        const svg = document.querySelector('#favicon').href;
+        const logos = document.querySelectorAll('.logo');
+        logos.forEach((logo) => logo.src = svg);
+    }
+
     function getChartBackgroundColor() {
         return getComputedStyle(document.documentElement)
             .getPropertyValue('--bg-color-light')
             .trim();
     }
 
+    setLogo();
     convertTimestampToLocal();
     makeTablesSortable("table");
 </script>
