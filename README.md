@@ -70,7 +70,9 @@ If a PNG is required, open the HTML file and click the "Save to Image" button. T
 charts generation, use `--help` on the subcommand.
 
 ```sh
-# The Burndown chart will contain 7 sprints of 2 weeks and start at 240 hours remaining per person
+# Without burndown charts
+gitlab-time-report-cli https://gitlab.com/username/my-repo --token myAccessToken charts
+# With burndown charts of 7 sprints consisting of 2 weeks that starts at 240 hours remaining per person
 gitlab-time-report-cli https://gitlab.com/username/my-repo --token myAccessToken charts --sprints 7 --weeks-per-sprint 2 --hours-per-person 240
 ```
 
@@ -89,7 +91,8 @@ gitlab-time-report-cli https://gitlab.com/username/my-repo --token myAccessToken
 ## Create a dashboard
 
 The `dashboard` command creates a dashboard containing the charts above and tables with time statistics. It uses the
-same arguments as the `charts` command. An [example dashboard] is included in the project files.
+same arguments as the `charts` command. As in `charts`, if `--sprints`, `--weeks-per-sprint` and `--hours-per-person` 
+are omitted, no burndown charts are generated. An [example dashboard] is included in the project files.
 
 ```sh
 gitlab-time-report-cli https://gitlab.com/username/my-repo dashboard --sprints 7 --weeks-per-sprint 2 --hours-per-person 240

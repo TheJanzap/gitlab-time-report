@@ -305,10 +305,6 @@ doc:gitlab-time-report:
   needs: [ "build:debug" ]
   # Official Debian image, with wget and CA certificates preinstalled
   image: buildpack-deps:curl
-  variables:
-    SPRINTS: 7
-    WEEKS_PER_SPRINT: 2
-    HOURS_PER_PERSON: 240
   script:
     # Move the executable into the working directory
     - mv ./target/debug/$BINARY_NAME .

@@ -178,6 +178,7 @@ Total Problems found: {number_of_problems}
 }
 
 /// Creates the graphs based on the time logs and the chart options.
+#[expect(clippy::too_many_lines)]
 pub(crate) fn create_charts(
     time_logs: &[TimeLog],
     options: &arguments::ChartOptionsArgs,
@@ -185,13 +186,6 @@ pub(crate) fn create_charts(
     other_label: Option<&Label>,
     repository_name: &str,
 ) -> Result<(), ChartSettingError> {
-    let burndown_options = charts::BurndownOptions::new(
-        time_logs,
-        options.weeks_per_sprint,
-        options.sprints,
-        options.hours_per_person,
-        options.start_date,
-    )?;
     let mut render_options = charts::RenderOptions::new(
         options.width,
         options.height,
@@ -209,19 +203,30 @@ pub(crate) fn create_charts(
         &mut render_options,
     )?;
 
-    println!("Creating Burndown Charts...");
-    charts::create_burndown_chart(
-        time_logs,
-        &BurndownType::PerPerson,
-        &burndown_options,
-        &mut render_options,
-    )?;
-    charts::create_burndown_chart(
-        time_logs,
-        &BurndownType::Total,
-        &burndown_options,
-        &mut render_options,
-    )?;
+    // Only create burndown charts if BurndownOptionArgs are present.
+    if let Some(burndown_options) = &options.burndown {
+        let burndown_options = charts::BurndownOptions::new(
+            time_logs,
+            burndown_options.weeks_per_sprint,
+            burndown_options.sprints,
+            burndown_options.hours_per_person,
+            options.start_date,
+        )?;
+
+        println!("Creating Burndown Charts...");
+        charts::create_burndown_chart(
+            time_logs,
+            &BurndownType::PerPerson,
+            &burndown_options,
+            &mut render_options,
+        )?;
+        charts::create_burndown_chart(
+            time_logs,
+            &BurndownType::Total,
+            &burndown_options,
+            &mut render_options,
+        )?;
+    }
 
     println!("Creating Bar Chart for Hours spent by Milestones...");
     let by_milestone = filters::group_by_milestone(time_logs).collect();
@@ -293,6 +298,13 @@ pub(crate) fn create_charts(
         options.output.display()
     );
 
+    if options.burndown.is_none() {
+        println!(
+            "No Burndown charts were created. To generate them, provide --sprints, \
+            --weeks-per-sprint and --hours-per-person."
+        );
+    }
+
     Ok(())
 }
 
@@ -313,4 +325,15 @@ pub(crate) fn create_label_options(
     });
 
     (selected_labels, other_label)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn verify_cli() {
+        use clap::CommandFactory;
+        arguments::Arguments::command().debug_assert();
+    }
 }

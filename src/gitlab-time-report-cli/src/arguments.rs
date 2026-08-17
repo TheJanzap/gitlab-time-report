@@ -63,11 +63,15 @@ pub(super) enum Command {
     /// Generate charts from your time logs as HTML and SVG. Creates the following charts:
     /// Time spent per user, per milestone, per label, per user/label, per type (issue or MR),
     /// per type/user, estimates/actual time per label and burndown charts (total and per user).
+    /// Burndown charts are only generated if `--sprints`, `--weeks-per-sprint` and
+    /// `--hours-per-person` are provided.
     Charts {
         #[command(flatten)]
         chart_options: ChartOptionsArgs,
     },
     /// Generate an HTML file with charts and statistics about the time logs.
+    /// Burndown charts are only generated if `--sprints`, `--weeks-per-sprint` and
+    /// `--hours-per-person` are provided.
     Dashboard {
         #[command(flatten)]
         chart_options: ChartOptionsArgs,
@@ -97,18 +101,8 @@ pub(super) struct ChartOptionsArgs {
     #[arg(short, long, default_value = "charts")]
     pub(super) output: PathBuf,
 
-    /// The number of sprints the project is planned to take for the burndown chart.
-    /// If sprints are not used in your project, enter the number of weeks that the project has.
-    #[arg(long, value_name = "NUMBER_OF_SPRINTS", env)]
-    pub(super) sprints: u16,
-
-    /// The number of weeks each sprint lasts. Required for the burndown charts.
-    #[arg(long, env)]
-    pub(super) weeks_per_sprint: u16,
-
-    /// The number of hours a person is expected to work in total. Required for the burndown charts.
-    #[arg(long, env)]
-    pub(super) hours_per_person: f32,
+    #[command(flatten)]
+    pub(super) burndown: Option<BurndownOptionsArgs>,
 
     /// The start date of the burndown chart.
     /// If not set, the date of the earliest time log is used.
@@ -119,4 +113,22 @@ pub(super) struct ChartOptionsArgs {
     /// Print help
     #[clap(long, action = clap::ArgAction::HelpLong)]
     help: Option<bool>,
+}
+
+/// Options for generating burndown charts.
+#[derive(Args)]
+#[group(requires_all = ["sprints", "weeks_per_sprint", "hours_per_person"])]
+pub(super) struct BurndownOptionsArgs {
+    /// The number of sprints the project is planned to take for the burndown chart.
+    /// If sprints are not used in your project, enter the number of weeks that the project has.
+    #[arg(long, value_name = "NUMBER_OF_SPRINTS", env, required = false)]
+    pub(super) sprints: u16,
+
+    /// The number of weeks each sprint lasts. Required for the burndown charts.
+    #[arg(long, env, required = false)]
+    pub(super) weeks_per_sprint: u16,
+
+    /// The number of hours a person is expected to work in total. Required for the burndown charts.
+    #[arg(long, env, required = false)]
+    pub(super) hours_per_person: f32,
 }
