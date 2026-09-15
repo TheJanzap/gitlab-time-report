@@ -1,7 +1,7 @@
 //! Data structures for creating charts
 
 use crate::model::TimeLog;
-use chrono::{Local, NaiveDate};
+use chrono::NaiveDate;
 use std::path::Path;
 use std::process;
 use thiserror::Error;
@@ -113,7 +113,6 @@ impl BurndownOptions {
             ));
         }
 
-        // Set the start date to the earliest time log date if not set
         let start_date = time_logs
             .iter()
             .map(|t| t.spent_at.date_naive())
