@@ -2,6 +2,7 @@
 
 #![cfg(not(tarpaulin_include))]
 
+use chrono::NaiveDate;
 use gitlab_time_report::model::Project;
 use gitlab_time_report::{FetchOptions, QueryError};
 
@@ -9,8 +10,9 @@ use gitlab_time_report::{FetchOptions, QueryError};
 pub(super) fn fetch_project(
     url: &str,
     token: Option<&String>,
+    start_date: Option<NaiveDate>,
 ) -> Result<Project, Box<dyn std::error::Error>> {
-    let fetch_options = FetchOptions::new(url, token.cloned())?;
+    let fetch_options = FetchOptions::new(url, token.cloned(), start_date)?;
 
     let project_result = gitlab_time_report::fetch_project_time_logs(&fetch_options);
     match project_result {
@@ -27,17 +29,18 @@ pub(super) fn fetch_project(
 pub(super) fn fetch_projects(
     urls: Vec<String>,
     token: Option<&String>,
+    start_date: Option<NaiveDate>,
 ) -> Result<Project, Box<dyn std::error::Error>> {
     // Fetch the data for the first URL
     let mut url_iter = urls.into_iter();
     let first_url = url_iter.next().expect("Should be at least one URL");
     println!("Fetching time logs from '{first_url}'...");
-    let mut project = fetch_project(&first_url, token)?;
+    let mut project = fetch_project(&first_url, token, start_date)?;
 
     // Fetch the data for all other URLs and merge them into the first project
     for url in url_iter {
         println!("Fetching time logs from '{url}'...");
-        let current_project = fetch_project(&url, token)?;
+        let current_project = fetch_project(&url, token, start_date)?;
         project.merge(current_project);
     }
     Ok(project)

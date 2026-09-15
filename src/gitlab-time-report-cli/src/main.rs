@@ -7,7 +7,6 @@ mod fetch_projects;
 mod print_table;
 
 use arguments::Command;
-use chrono::NaiveDate;
 use clap::Parser;
 use gitlab_time_report::charts::{BurndownType, ChartSettingError};
 use gitlab_time_report::dashboard::create_html;
@@ -19,20 +18,13 @@ use std::collections::{BTreeMap, HashSet};
 fn main() -> Result<(), String> {
     let cli = arguments::Arguments::parse();
 
-    let project =
-        fetch_projects::fetch_projects(cli.url, cli.token.as_ref()).map_err(|e| e.to_string())?;
-
-    let start_date_for_validation: Option<NaiveDate> = match &cli.command {
-        Some(Command::Charts { chart_options } | Command::Dashboard { chart_options, .. }) => {
-            chart_options.start_date
-        }
-        _ => None,
-    };
+    let project = fetch_projects::fetch_projects(cli.url, cli.token.as_ref(), cli.start_date)
+        .map_err(|e| e.to_string())?;
 
     validate_time_logs(
         &project.time_logs,
         cli.validation_details,
-        start_date_for_validation,
+        cli.start_date,
         cli.validation_max_hours,
     );
 
@@ -210,7 +202,6 @@ pub(crate) fn create_charts(
             burndown_options.weeks_per_sprint,
             burndown_options.sprints,
             burndown_options.hours_per_person,
-            options.start_date,
         )?;
 
         println!("Creating Burndown Charts...");

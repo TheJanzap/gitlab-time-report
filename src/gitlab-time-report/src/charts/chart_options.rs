@@ -106,7 +106,6 @@ impl BurndownOptions {
         weeks_per_sprint: u16,
         sprints: u16,
         hours_per_person: f32,
-        start_date: Option<NaiveDate>,
     ) -> Result<Self, ChartSettingError> {
         if time_logs.is_empty() {
             return Err(ChartSettingError::InvalidInputData(
@@ -115,16 +114,14 @@ impl BurndownOptions {
         }
 
         // Set the start date to the earliest time log date if not set
-        let start_date = start_date.unwrap_or_else(|| {
-            time_logs
-                .iter()
-                .map(|t| t.spent_at.date_naive())
-                .min()
-                .unwrap_or_else(|| {
-                    eprintln!("No time logs found.");
-                    process::exit(6);
-                })
-        });
+        let start_date = time_logs
+            .iter()
+            .map(|t| t.spent_at.date_naive())
+            .min()
+            .unwrap_or_else(|| {
+                eprintln!("No time logs found.");
+                process::exit(6);
+            });
 
         // Some validation checks
         if weeks_per_sprint == 0 {

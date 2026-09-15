@@ -1,5 +1,6 @@
 //! Data structure with settings for accessing the GitLab API.
 
+use chrono::NaiveDate;
 use thiserror::Error;
 
 /// Contains all information needed for a call to the GitLab API.
@@ -14,6 +15,8 @@ pub struct FetchOptions {
     pub(super) path: String,
     /// A GitLab access token. Required if the project visibility is set to "internal" or "private".
     pub(super) token: Option<String>,
+    /// The earliest date the time logs should be fetched from.
+    pub(super) start_date: Option<NaiveDate>,
 }
 
 impl FetchOptions {
@@ -32,7 +35,11 @@ impl FetchOptions {
     ///
     /// # Errors
     /// The function returns an `Err` if the URL path component does not contain two `/`, i.e. `https://gitlab.com/gitlab-org`
-    pub fn new(url: &str, token: Option<String>) -> Result<Self, FetchOptionsError> {
+    pub fn new(
+        url: &str,
+        token: Option<String>,
+        start_date: Option<NaiveDate>,
+    ) -> Result<Self, FetchOptionsError> {
         let (protocol, host, path) =
             Self::split_url(url).ok_or(FetchOptionsError::InvalidUrl(url.into()))?;
         Ok(Self {
@@ -40,6 +47,7 @@ impl FetchOptions {
             host,
             path,
             token,
+            start_date,
         })
     }
 

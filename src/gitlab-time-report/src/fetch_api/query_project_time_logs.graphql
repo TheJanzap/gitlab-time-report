@@ -1,7 +1,7 @@
-query($projectPath: ID!, $after: String) {
+query($projectPath: ID!, $after: String, $startDate: Time) {
   project(fullPath: $projectPath) {
     name
-    timelogs(first: 100, after: $after) {
+    timelogs(first: 100, after: $after, startDate: $startDate) {
       pageInfo {
         hasNextPage
         endCursor

@@ -8,7 +8,7 @@ mod http_requests;
 use crate::fetch_api::api_model::ApiResponse;
 use crate::fetch_api::http_requests::NetworkError;
 use crate::model::Project;
-use chrono::Duration;
+use chrono::{Duration, NaiveDate};
 pub use fetch_options::FetchOptions;
 use reqwest::blocking::Client;
 use serde_json::{Error, json};
@@ -75,7 +75,12 @@ fn fetch_project_time_logs_impl(
 
     // Fetch all pages from the GitLab API
     while has_next_page {
-        let payload = build_query_payload(query_template, &options.path, cursor.as_deref());
+        let payload = build_query_payload(
+            query_template,
+            &options.path,
+            options.start_date,
+            cursor.as_deref(),
+        );
         let response = run_query(payload, http_client, options)?;
 
         // Create a new deserializer that reads the response
@@ -114,22 +119,18 @@ fn fetch_project_time_logs_impl(
 fn build_query_payload(
     template: &str,
     project_path: &str,
+    start_date: Option<NaiveDate>,
     cursor: Option<&str>,
 ) -> serde_json::Value {
-    let variables = match cursor {
-        Some(c) => json!({
-            "projectPath": project_path,
-            "after": c,
-        }),
-        None => json!({
-            "projectPath": project_path,
-            "after": null,
-        }),
-    };
-
+    // serde_json automatically serializes Option::None into null
+    // startDate can be set to null to fetch all time logs
     json!({
         "query": template,
-        "variables": variables,
+        "variables": {
+            "projectPath": project_path,
+            "after": cursor,
+            "startDate": start_date
+        },
     })
 }
 
