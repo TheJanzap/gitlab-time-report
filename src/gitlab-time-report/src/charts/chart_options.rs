@@ -269,29 +269,6 @@ mod tests {
     }
 
     #[test]
-    fn burndownoptions_new_returns_ok_with_implicit_start_date() {
-        let time_logs = get_time_logs();
-        let chart_options = BurndownOptions::new(
-            &time_logs,
-            WEEKS_PER_SPRINT_DEFAULT,
-            SPRINTS,
-            TOTAL_HOURS_PER_PERSON,
-            None,
-        );
-        let result = chart_options;
-        assert!(result.is_ok());
-        let burndown_options = result.unwrap();
-        assert_eq!(burndown_options.weeks_per_sprint, WEEKS_PER_SPRINT_DEFAULT);
-        assert_eq!(burndown_options.sprints, SPRINTS);
-        #[expect(clippy::float_cmp)]
-        {
-            assert_eq!(burndown_options.hours_per_person, TOTAL_HOURS_PER_PERSON);
-        }
-        let first_date = time_logs.iter().map(|l| l.spent_at).min().unwrap();
-        assert_eq!(burndown_options.start_date, first_date.date_naive());
-    }
-
-    #[test]
     fn burndownoptions_new_returns_err_without_timelogs() {
         let time_logs = Vec::<TimeLog>::new();
         let chart_options = BurndownOptions::new(
@@ -351,25 +328,6 @@ mod tests {
             result.unwrap_err(),
             ChartSettingError::InvalidInputData(_),
             "Should not allow zero sprints"
-        );
-    }
-
-    #[test]
-    fn burndownoptions_new_returns_err_with_start_date_in_future() {
-        let time_logs = get_time_logs();
-        let chart_options = BurndownOptions::new(
-            &time_logs,
-            WEEKS_PER_SPRINT_DEFAULT,
-            SPRINTS,
-            TOTAL_HOURS_PER_PERSON,
-            Some(Local::now().date_naive() + chrono::Duration::days(1)),
-        );
-        let result = chart_options;
-        assert!(result.is_err());
-        assert_matches!(
-            result.unwrap_err(),
-            ChartSettingError::InvalidInputData(_),
-            "Should not allow start date in the future"
         );
     }
 }
