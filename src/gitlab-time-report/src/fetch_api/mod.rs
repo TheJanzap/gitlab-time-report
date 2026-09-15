@@ -177,6 +177,31 @@ mod tests {
     const URL: &str = "https://gitlab.com/test-user/test-project";
     const PROJECT_NAME: &str = "Test Repo";
     const PROJECT_START: Option<NaiveDate> = NaiveDate::from_ymd_opt(2025, 1, 1);
+    const TEMPLATE: &str = include_str!("query_project_time_logs.graphql");
+
+    #[test]
+    fn build_query_payload_is_valid() {
+        const PROJECT_PATH: &str = "user/repo";
+        let query = build_query_payload(TEMPLATE, PROJECT_PATH, None, None);
+        let result_template = query.get("query").unwrap().as_str().unwrap();
+        assert_eq!(result_template, TEMPLATE);
+
+        let variables = query.get("variables").unwrap();
+        let project_path = variables.get("projectPath").unwrap().as_str().unwrap();
+        assert_eq!(project_path, PROJECT_PATH);
+        let cursor = variables.get("after").unwrap();
+        assert!(cursor.is_null());
+        let start_date = variables.get("startDate").unwrap();
+        assert!(start_date.is_null());
+    }
+
+    #[test]
+    fn build_query_payload_with_start_date() {
+        let query = build_query_payload(TEMPLATE, "user/repo", PROJECT_START, None);
+        let variables = query.get("variables").unwrap();
+        let start_date = variables.get("startDate").unwrap().as_str().unwrap();
+        assert_eq!(start_date, PROJECT_START.unwrap().to_string());
+    }
 
     #[test]
     fn fetch_project_correctly() {
