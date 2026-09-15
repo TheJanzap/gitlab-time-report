@@ -142,12 +142,6 @@ impl BurndownOptions {
             ));
         }
 
-        if start_date > Local::now().date_naive() {
-            return Err(ChartSettingError::InvalidInputData(
-                "Start date cannot be in the future".to_string(),
-            ));
-        }
-
         Ok(Self {
             weeks_per_sprint,
             sprints,
