@@ -45,7 +45,7 @@ fn run_query(
 /// ```
 /// # use gitlab_time_report::{fetch_project_time_logs, FetchOptions};
 /// # fn run() -> Result<(), Box<dyn std::error::Error>> {
-/// let options = FetchOptions::new("https://gitlab.com/gitlab-org/gitlab", None)?;
+/// let options = FetchOptions::new("https://gitlab.com/gitlab-org/gitlab", None, None)?;
 /// let project = fetch_project_time_logs(&options);
 /// // Check for errors
 /// match project {
@@ -176,10 +176,11 @@ mod tests {
 
     const URL: &str = "https://gitlab.com/test-user/test-project";
     const PROJECT_NAME: &str = "Test Repo";
+    const PROJECT_START: Option<NaiveDate> = NaiveDate::from_ymd_opt(2025, 1, 1);
 
     #[test]
     fn fetch_project_correctly() {
-        let options = FetchOptions::new(URL, None).unwrap();
+        let options = FetchOptions::new(URL, None, None).unwrap();
         let mut mock = MockHttpFetcher::new();
         mock.expect_http_post_request().return_const({
             Ok(r#"{"data": { "project": { "name": "Test Repo", "timelogs": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "totalSpentTime": "20", "nodes": []}}}}"#.into())
@@ -194,7 +195,7 @@ mod tests {
     fn fetch_project_with_pagination() {
         const JSON_TEMPLATE: &str = r#"{"data":{"project":{"name":"Test Repo","timelogs":{"pageInfo":{"hasNextPage":$NEXT,"endCursor":"$CURSOR"}, "totalSpentTime": "20", "nodes":[]}}}}"#;
 
-        let options = FetchOptions::new(URL, None).unwrap();
+        let options = FetchOptions::new(URL, None, None).unwrap();
         let mut mock = MockHttpFetcher::new();
 
         // Mock call when returning the first page
@@ -239,7 +240,7 @@ mod tests {
     fn fetch_project_not_found() {
         let input = "https://gitlab.com/invalid/project";
 
-        let options = FetchOptions::new(input, None).unwrap();
+        let options = FetchOptions::new(input, None, None).unwrap();
         let mut mock = MockHttpFetcher::new();
         mock.expect_http_post_request()
             .return_const(Ok(r#"{"data": {"project": null}}"#.into()));
@@ -252,7 +253,7 @@ mod tests {
     #[test]
     fn fetch_with_fine_grained_access_token() {
         const TOKEN: &str = "glpat-fine-grained-access-token";
-        let options = FetchOptions::new(URL, Some(TOKEN.to_string())).unwrap();
+        let options = FetchOptions::new(URL, Some(TOKEN.to_string()), None).unwrap();
         let mut mock = MockHttpFetcher::new();
         mock.expect_http_post_request().return_const({
             Ok(r#"{"errors":[{"message": "Access denied: This operation doesn't support fine-grained personal access tokens.","locations":[{"line": 11, "column": 9}],"path": ["project", "timelogs", "nodes", 0, "spentAt"]}],"data":{"project":null}}"#.into())

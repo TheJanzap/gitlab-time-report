@@ -322,14 +322,13 @@ mod tests {
         Issue, MergeRequest, Milestone, TrackableItem, TrackableItemFields, TrackableItemKind, User,
     };
     use charming::series::{Bar, Pie};
-    use chrono::{DateTime, Duration, Local, NaiveDate};
+    use chrono::{DateTime, Duration, Local};
 
     const NUMBER_OF_LOGS: usize = 6;
     pub(super) const PROJECT_WEEKS: u16 = 4;
     pub(super) const WEEKS_PER_SPRINT_DEFAULT: u16 = 1;
     pub(super) const SPRINTS: u16 = PROJECT_WEEKS;
     pub(super) const TOTAL_HOURS_PER_PERSON: f32 = 10.0;
-    pub(super) const PROJECT_START: Option<NaiveDate> = NaiveDate::from_ymd_opt(2025, 1, 1);
 
     #[expect(clippy::too_many_lines)]
     pub(super) fn get_time_logs() -> [TimeLog; NUMBER_OF_LOGS] {

@@ -24,8 +24,10 @@ impl FetchOptions {
     /// access token, if needed.
     /// ```
     /// # use gitlab_time_report::FetchOptions;
+    /// # use chrono::NaiveDate;
     /// let access_token = "MyAccessToken".to_string();
-    /// let options_result = FetchOptions::new("https://gitlab.com/gitlab-org/gitlab", Some(access_token));
+    /// let start_date = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+    /// let options_result = FetchOptions::new("https://gitlab.com/gitlab-org/gitlab", Some(access_token), Some(start_date));
     /// // Check for errors
     /// let Ok(option) = options_result else {
     ///     panic!("Error happened when creating FetchOption: {:?}", options_result.unwrap_err());
@@ -78,6 +80,8 @@ pub enum FetchOptionsError {
 mod tests {
     use super::*;
 
+    const PROJECT_START: Option<NaiveDate> = NaiveDate::from_ymd_opt(2025, 1, 1);
+
     #[test]
     fn create_new_fetch_options() {
         let url = "https://gitlab.ost.ch/gitlab-time-report/gitlab-time-report";
@@ -87,9 +91,10 @@ mod tests {
             host: "gitlab.ost.ch".into(),
             path: "gitlab-time-report/gitlab-time-report".into(),
             token: Some(token.clone()),
+            start_date: PROJECT_START,
         };
 
-        let output = FetchOptions::new(url, Some(token)).unwrap();
+        let output = FetchOptions::new(url, Some(token), PROJECT_START).unwrap();
         assert_eq!(output, result);
     }
 
@@ -102,9 +107,10 @@ mod tests {
             host: "gitlab.ost.ch".into(),
             path: "gitlab-time-report/gitlab-time-report".into(),
             token: Some(token.clone()),
+            start_date: PROJECT_START,
         };
 
-        let output = FetchOptions::new(url, Some(token)).unwrap();
+        let output = FetchOptions::new(url, Some(token), PROJECT_START).unwrap();
         assert_eq!(output, result);
     }
 

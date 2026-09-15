@@ -184,6 +184,7 @@ mod tests {
     const HEIGHT: u16 = 600;
     const REPOSITORY_NAME_INPUT: &str = "Sample Repository";
     const REPOSITORY_NAME_OUTPUT: &str = "sample-repository";
+    const PROJECT_START: Option<NaiveDate> = NaiveDate::from_ymd_opt(2025, 1, 1);
 
     #[test]
     fn renderoptions_new_returns_ok_with_theme_path_set() {
@@ -254,7 +255,6 @@ mod tests {
             WEEKS_PER_SPRINT_DEFAULT,
             SPRINTS,
             TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
         );
         let result = chart_options;
         assert!(result.is_ok());
@@ -299,7 +299,6 @@ mod tests {
             WEEKS_PER_SPRINT_DEFAULT,
             SPRINTS,
             TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
         );
         let result = chart_options;
         assert!(result.is_err());
@@ -313,13 +312,7 @@ mod tests {
     #[test]
     fn burndownoptions_new_returns_err_with_zero_weeks_per_sprint() {
         let time_logs = get_time_logs();
-        let chart_options = BurndownOptions::new(
-            &time_logs,
-            0,
-            SPRINTS,
-            TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
-        );
+        let chart_options = BurndownOptions::new(&time_logs, 0, SPRINTS, TOTAL_HOURS_PER_PERSON);
         let result = chart_options;
         assert!(result.is_err());
         assert_matches!(
@@ -332,13 +325,8 @@ mod tests {
     #[test]
     fn burndownoptions_new_returns_err_with_invalid_hours_per_person() {
         let time_logs = get_time_logs();
-        let chart_options = BurndownOptions::new(
-            &time_logs,
-            WEEKS_PER_SPRINT_DEFAULT,
-            SPRINTS,
-            0.0,
-            PROJECT_START,
-        );
+        let chart_options =
+            BurndownOptions::new(&time_logs, WEEKS_PER_SPRINT_DEFAULT, SPRINTS, 0.0);
         let result = chart_options;
         assert!(result.is_err());
         assert_matches!(
@@ -356,7 +344,6 @@ mod tests {
             WEEKS_PER_SPRINT_DEFAULT,
             0,
             TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
         );
         let result = chart_options;
         assert!(result.is_err());
