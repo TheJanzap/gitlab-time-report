@@ -381,6 +381,10 @@ mod tests {
             .with_validator(NoFutureDateValidator)
             .with_validator(DuplicatesValidator::new());
 
+        let excessive_hours_validator = ValidationProblem::ExcessiveHours {
+            max_hours: EXCESSIVE_HOURS_LIMIT,
+        };
+
         let results = validator.validate(&time_logs);
         assert_eq!(results.len(), NUMBER_OF_LOGS);
 
