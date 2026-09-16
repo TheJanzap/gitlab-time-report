@@ -24,7 +24,6 @@ fn main() -> Result<(), String> {
     validate_time_logs(
         &project.time_logs,
         cli.validation_details,
-        cli.start_date,
         cli.validation_max_hours,
     );
 
@@ -86,7 +85,6 @@ fn main() -> Result<(), String> {
 pub(crate) fn validate_time_logs(
     time_logs: &[TimeLog],
     show_validation_details: bool,
-    start_date: Option<chrono::NaiveDate>,
     max_hours: u16,
 ) {
     let mut validator = TimeLogValidator::new()
@@ -94,12 +92,6 @@ pub(crate) fn validate_time_logs(
         .with_validator(gitlab_time_report::validation::HasSummaryValidator)
         .with_validator(gitlab_time_report::validation::NoFutureDateValidator)
         .with_validator(gitlab_time_report::validation::DuplicatesValidator::new());
-
-    if let Some(start_date) = start_date {
-        validator = validator.with_validator(
-            gitlab_time_report::validation::BeforeStartDateValidator::new(start_date),
-        );
-    }
 
     let results = validator.validate(time_logs);
     let number_of_problems = results.iter().filter(|r| !r.is_valid()).count();
@@ -153,10 +145,6 @@ pub(crate) fn validate_time_logs(
                 ValidationProblem::MissingSummary => println!("No summary was entered"),
                 ValidationProblem::FutureDate => println!("Date is in the future"),
                 ValidationProblem::DuplicateEntry => println!("Duplicate entry"),
-                ValidationProblem::BeforeStartDate { start_date } => println!(
-                    "Date is before project start date: {}",
-                    start_date.format("%Y-%m-%d")
-                ),
             }
             println!();
         }

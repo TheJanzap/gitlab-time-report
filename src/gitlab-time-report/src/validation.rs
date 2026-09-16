@@ -16,8 +16,6 @@ pub enum ValidationProblem {
     FutureDate,
     /// Duplicate entry has been found (same user, date, trackable item, time spent and summary)
     DuplicateEntry,
-    /// `TimeLog` is before the configured project start date.
-    BeforeStartDate { start_date: NaiveDate },
 }
 
 /// Stores the result of a validation run.
@@ -230,30 +228,6 @@ impl Validator for DuplicatesValidator {
     }
 }
 
-/// Validates that a time log date is not before the project start date.
-pub struct BeforeStartDateValidator {
-    start_date: NaiveDate,
-}
-
-impl BeforeStartDateValidator {
-    #[must_use]
-    pub fn new(start_date: NaiveDate) -> Self {
-        Self { start_date }
-    }
-}
-
-impl Validator for BeforeStartDateValidator {
-    fn validate_single(&mut self, time_log: &TimeLog) -> Vec<ValidationProblem> {
-        let log_date = time_log.spent_at.date_naive();
-        if log_date < self.start_date {
-            return vec![ValidationProblem::BeforeStartDate {
-                start_date: self.start_date,
-            }];
-        }
-        Vec::new()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -399,26 +373,6 @@ mod tests {
     }
 
     #[test]
-    fn test_before_start_date_validator() {
-        let time_logs = get_time_logs();
-        let start_date = Local::now().date_naive();
-
-        let expected_problem = ValidationProblem::BeforeStartDate { start_date };
-
-        let mut validator =
-            TimeLogValidator::new().with_validator(BeforeStartDateValidator::new(start_date));
-
-        let results = validator.validate(&time_logs);
-        assert_eq!(results.len(), NUMBER_OF_LOGS);
-        for (i, result) in results.iter().enumerate() {
-            match i {
-                0 | 1 | 2 | 4 | 6 => assert!(result.has_problems(&expected_problem)),
-                _ => assert!(result.is_valid()),
-            }
-        }
-    }
-
-    #[test]
     fn test_all_validators() {
         let time_logs = get_time_logs();
         let mut validator = TimeLogValidator::new()
@@ -426,10 +380,6 @@ mod tests {
             .with_validator(HasSummaryValidator)
             .with_validator(NoFutureDateValidator)
             .with_validator(DuplicatesValidator::new());
-
-        let excessive_hours_validator = ValidationProblem::ExcessiveHours {
-            max_hours: EXCESSIVE_HOURS_LIMIT,
-        };
 
         let results = validator.validate(&time_logs);
         assert_eq!(results.len(), NUMBER_OF_LOGS);
