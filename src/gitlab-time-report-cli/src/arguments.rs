@@ -38,8 +38,7 @@ pub(super) struct Arguments {
     #[arg(short, long, value_delimiter = ',', env = "GITLAB_LABELS")]
     pub(super) labels: Vec<String>,
 
-    /// The start date of the burndown chart.
-    /// If not set, the date of the earliest time log is used.
+    /// Date from which onwards time logs will be fetched from GitLab.
     #[arg(long, value_name = "YYYY-MM-DD")]
     pub(super) start_date: Option<NaiveDate>,
 
