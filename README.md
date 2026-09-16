@@ -152,7 +152,6 @@ The validated properties are:
 
 - Excessive hours on a single time log (default: 10 hours, adjustable via `--validation-max-hours`)
 - Future date entered
-- Entered date before start date (adjustable via `--start-date`)
 - No summary entered
 - Duplicate entries (Same user, same issue/MR, same date, same summary, same entered time)
 
