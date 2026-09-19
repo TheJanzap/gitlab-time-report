@@ -1,7 +1,7 @@
 //! Data structures for creating charts
 
 use crate::model::TimeLog;
-use chrono::{Local, NaiveDate};
+use chrono::NaiveDate;
 use std::path::Path;
 use std::process;
 use thiserror::Error;
@@ -106,7 +106,6 @@ impl BurndownOptions {
         weeks_per_sprint: u16,
         sprints: u16,
         hours_per_person: f32,
-        start_date: Option<NaiveDate>,
     ) -> Result<Self, ChartSettingError> {
         if time_logs.is_empty() {
             return Err(ChartSettingError::InvalidInputData(
@@ -114,17 +113,14 @@ impl BurndownOptions {
             ));
         }
 
-        // Set the start date to the earliest time log date if not set
-        let start_date = start_date.unwrap_or_else(|| {
-            time_logs
-                .iter()
-                .map(|t| t.spent_at.date_naive())
-                .min()
-                .unwrap_or_else(|| {
-                    eprintln!("No time logs found.");
-                    process::exit(6);
-                })
-        });
+        let start_date = time_logs
+            .iter()
+            .map(|t| t.spent_at.date_naive())
+            .min()
+            .unwrap_or_else(|| {
+                eprintln!("No time logs found.");
+                process::exit(6);
+            });
 
         // Some validation checks
         if weeks_per_sprint == 0 {
@@ -142,12 +138,6 @@ impl BurndownOptions {
         if sprints == 0 {
             return Err(ChartSettingError::InvalidInputData(
                 "Sprints cannot be 0".to_string(),
-            ));
-        }
-
-        if start_date > Local::now().date_naive() {
-            return Err(ChartSettingError::InvalidInputData(
-                "Start date cannot be in the future".to_string(),
             ));
         }
 
@@ -187,6 +177,7 @@ mod tests {
     const HEIGHT: u16 = 600;
     const REPOSITORY_NAME_INPUT: &str = "Sample Repository";
     const REPOSITORY_NAME_OUTPUT: &str = "sample-repository";
+    const PROJECT_START: Option<NaiveDate> = NaiveDate::from_ymd_opt(2025, 1, 1);
 
     #[test]
     fn renderoptions_new_returns_ok_with_theme_path_set() {
@@ -257,7 +248,6 @@ mod tests {
             WEEKS_PER_SPRINT_DEFAULT,
             SPRINTS,
             TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
         );
         let result = chart_options;
         assert!(result.is_ok());
@@ -272,29 +262,6 @@ mod tests {
     }
 
     #[test]
-    fn burndownoptions_new_returns_ok_with_implicit_start_date() {
-        let time_logs = get_time_logs();
-        let chart_options = BurndownOptions::new(
-            &time_logs,
-            WEEKS_PER_SPRINT_DEFAULT,
-            SPRINTS,
-            TOTAL_HOURS_PER_PERSON,
-            None,
-        );
-        let result = chart_options;
-        assert!(result.is_ok());
-        let burndown_options = result.unwrap();
-        assert_eq!(burndown_options.weeks_per_sprint, WEEKS_PER_SPRINT_DEFAULT);
-        assert_eq!(burndown_options.sprints, SPRINTS);
-        #[expect(clippy::float_cmp)]
-        {
-            assert_eq!(burndown_options.hours_per_person, TOTAL_HOURS_PER_PERSON);
-        }
-        let first_date = time_logs.iter().map(|l| l.spent_at).min().unwrap();
-        assert_eq!(burndown_options.start_date, first_date.date_naive());
-    }
-
-    #[test]
     fn burndownoptions_new_returns_err_without_timelogs() {
         let time_logs = Vec::<TimeLog>::new();
         let chart_options = BurndownOptions::new(
@@ -302,7 +269,6 @@ mod tests {
             WEEKS_PER_SPRINT_DEFAULT,
             SPRINTS,
             TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
         );
         let result = chart_options;
         assert!(result.is_err());
@@ -316,13 +282,7 @@ mod tests {
     #[test]
     fn burndownoptions_new_returns_err_with_zero_weeks_per_sprint() {
         let time_logs = get_time_logs();
-        let chart_options = BurndownOptions::new(
-            &time_logs,
-            0,
-            SPRINTS,
-            TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
-        );
+        let chart_options = BurndownOptions::new(&time_logs, 0, SPRINTS, TOTAL_HOURS_PER_PERSON);
         let result = chart_options;
         assert!(result.is_err());
         assert_matches!(
@@ -335,13 +295,8 @@ mod tests {
     #[test]
     fn burndownoptions_new_returns_err_with_invalid_hours_per_person() {
         let time_logs = get_time_logs();
-        let chart_options = BurndownOptions::new(
-            &time_logs,
-            WEEKS_PER_SPRINT_DEFAULT,
-            SPRINTS,
-            0.0,
-            PROJECT_START,
-        );
+        let chart_options =
+            BurndownOptions::new(&time_logs, WEEKS_PER_SPRINT_DEFAULT, SPRINTS, 0.0);
         let result = chart_options;
         assert!(result.is_err());
         assert_matches!(
@@ -359,7 +314,6 @@ mod tests {
             WEEKS_PER_SPRINT_DEFAULT,
             0,
             TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
         );
         let result = chart_options;
         assert!(result.is_err());
@@ -367,25 +321,6 @@ mod tests {
             result.unwrap_err(),
             ChartSettingError::InvalidInputData(_),
             "Should not allow zero sprints"
-        );
-    }
-
-    #[test]
-    fn burndownoptions_new_returns_err_with_start_date_in_future() {
-        let time_logs = get_time_logs();
-        let chart_options = BurndownOptions::new(
-            &time_logs,
-            WEEKS_PER_SPRINT_DEFAULT,
-            SPRINTS,
-            TOTAL_HOURS_PER_PERSON,
-            Some(Local::now().date_naive() + chrono::Duration::days(1)),
-        );
-        let result = chart_options;
-        assert!(result.is_err());
-        assert_matches!(
-            result.unwrap_err(),
-            ChartSettingError::InvalidInputData(_),
-            "Should not allow start date in the future"
         );
     }
 }

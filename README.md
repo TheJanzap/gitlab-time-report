@@ -2,7 +2,7 @@
 
 [![Pipeline status badge](https://gitlab.com/gitlab-time-report/gitlab-time-report/badges/main/pipeline.svg)][Latest pipeline]
 [![Test coverage badge](https://gitlab.com/gitlab-time-report/gitlab-time-report/badges/main/coverage.svg?job=test:coverage)][Code coverage report]
-[![Latest Release](https://gitlab.com/gitlab-time-report/gitlab-time-report/-/badges/release.svg)][GitLab Releases] 
+[![Latest Release](https://gitlab.com/gitlab-time-report/gitlab-time-report/-/badges/release.svg)][GitLab Releases]
 
 GitLab Time-Report is a command-line application that allows you export time logs from Issues and
 Merge Requests of a GitLab repository to create statistics and charts of your working hours.
@@ -91,7 +91,7 @@ gitlab-time-report-cli https://gitlab.com/username/my-repo --token myAccessToken
 ## Create a dashboard
 
 The `dashboard` command creates a dashboard containing the charts above and tables with time statistics. It uses the
-same arguments as the `charts` command. As in `charts`, if `--sprints`, `--weeks-per-sprint` and `--hours-per-person` 
+same arguments as the `charts` command. As in `charts`, if `--sprints`, `--weeks-per-sprint` and `--hours-per-person`
 are omitted, no burndown charts are generated. An [example dashboard] is included in the project files.
 
 ```sh
@@ -134,6 +134,14 @@ Note that the names of the labels are case-sensitive.
 gitlab-time-report-cli https://gitlab.com/username/my-repo --labels Documentation,"Epic 1" <SUBCOMMANDS>
 ```
 
+## Set a start date
+
+To view time logs from a specific date onwards, use the `--start-date` option.
+
+```sh
+gitlab-time-report-cli https://gitlab.com/username/my-repo --start-date 2025-12-31 <SUBCOMMANDS>
+```
+
 ## Validation
 
 GitLab Time-Report also includes a validation for your time logs. By default, only the number of detected problems is
@@ -144,7 +152,7 @@ The validated properties are:
 
 - Excessive hours on a single time log (default: 10 hours, adjustable via `--validation-max-hours`)
 - Future date entered
-- Entered date before start date (adjustable via `--start-date` on `charts` and `dashboard`)
+- Entered date before start date (adjustable via `--start-date`)
 - No summary entered
 - Duplicate entries (Same user, same issue/MR, same date, same summary, same entered time)
 
@@ -277,12 +285,10 @@ planning.
 
 The full paper of GitLab Time-Report (in German) can be accessed on the [OST ePrint server].
 
-
 - [Code documentation of the CLI](https://gitlab-time-report-1c2e47.gitlab.io/code-doc/gitlab_time_report_cli/index.html)
 - [Code documentation of the library](https://gitlab-time-report-1c2e47.gitlab.io/code-doc/gitlab_time_report/index.html)
 - [Project dashboard](https://gitlab-time-report-1c2e47.gitlab.io/dashboard-project.html)
 - [Code coverage report][]
-
 
 # Disclaimer
 

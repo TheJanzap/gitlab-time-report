@@ -38,6 +38,10 @@ pub(super) struct Arguments {
     #[arg(short, long, value_delimiter = ',', env = "GITLAB_LABELS")]
     pub(super) labels: Vec<String>,
 
+    /// Date from which onwards time logs will be fetched from GitLab.
+    #[arg(long, value_name = "YYYY-MM-DD")]
+    pub(super) start_date: Option<NaiveDate>,
+
     /// Displays the problems with the time logs found during validation.
     #[arg(long)]
     pub(super) validation_details: bool,
@@ -103,11 +107,6 @@ pub(super) struct ChartOptionsArgs {
 
     #[command(flatten)]
     pub(super) burndown: Option<BurndownOptionsArgs>,
-
-    /// The start date of the burndown chart.
-    /// If not set, the date of the earliest time log is used.
-    #[arg(long, value_name = "YYYY-MM-DD")]
-    pub(super) start_date: Option<NaiveDate>,
 
     // Implements help only for --help, not for -h
     /// Print help

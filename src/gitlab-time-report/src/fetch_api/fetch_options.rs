@@ -1,5 +1,6 @@
 //! Data structure with settings for accessing the GitLab API.
 
+use chrono::NaiveDate;
 use thiserror::Error;
 
 /// Contains all information needed for a call to the GitLab API.
@@ -14,6 +15,8 @@ pub struct FetchOptions {
     pub(super) path: String,
     /// A GitLab access token. Required if the project visibility is set to "internal" or "private".
     pub(super) token: Option<String>,
+    /// The earliest date the time logs should be fetched from.
+    pub(super) start_date: Option<NaiveDate>,
 }
 
 impl FetchOptions {
@@ -21,8 +24,10 @@ impl FetchOptions {
     /// access token, if needed.
     /// ```
     /// # use gitlab_time_report::FetchOptions;
+    /// # use chrono::NaiveDate;
     /// let access_token = "MyAccessToken".to_string();
-    /// let options_result = FetchOptions::new("https://gitlab.com/gitlab-org/gitlab", Some(access_token));
+    /// let start_date = NaiveDate::from_ymd_opt(2025, 1, 1).unwrap();
+    /// let options_result = FetchOptions::new("https://gitlab.com/gitlab-org/gitlab", Some(access_token), Some(start_date));
     /// // Check for errors
     /// let Ok(option) = options_result else {
     ///     panic!("Error happened when creating FetchOption: {:?}", options_result.unwrap_err());
@@ -32,7 +37,11 @@ impl FetchOptions {
     ///
     /// # Errors
     /// The function returns an `Err` if the URL path component does not contain two `/`, i.e. `https://gitlab.com/gitlab-org`
-    pub fn new(url: &str, token: Option<String>) -> Result<Self, FetchOptionsError> {
+    pub fn new(
+        url: &str,
+        token: Option<String>,
+        start_date: Option<NaiveDate>,
+    ) -> Result<Self, FetchOptionsError> {
         let (protocol, host, path) =
             Self::split_url(url).ok_or(FetchOptionsError::InvalidUrl(url.into()))?;
         Ok(Self {
@@ -40,6 +49,7 @@ impl FetchOptions {
             host,
             path,
             token,
+            start_date,
         })
     }
 
@@ -70,6 +80,8 @@ pub enum FetchOptionsError {
 mod tests {
     use super::*;
 
+    const PROJECT_START: Option<NaiveDate> = NaiveDate::from_ymd_opt(2025, 1, 1);
+
     #[test]
     fn create_new_fetch_options() {
         let url = "https://gitlab.ost.ch/gitlab-time-report/gitlab-time-report";
@@ -79,9 +91,10 @@ mod tests {
             host: "gitlab.ost.ch".into(),
             path: "gitlab-time-report/gitlab-time-report".into(),
             token: Some(token.clone()),
+            start_date: PROJECT_START,
         };
 
-        let output = FetchOptions::new(url, Some(token)).unwrap();
+        let output = FetchOptions::new(url, Some(token), PROJECT_START).unwrap();
         assert_eq!(output, result);
     }
 
@@ -94,9 +107,10 @@ mod tests {
             host: "gitlab.ost.ch".into(),
             path: "gitlab-time-report/gitlab-time-report".into(),
             token: Some(token.clone()),
+            start_date: PROJECT_START,
         };
 
-        let output = FetchOptions::new(url, Some(token)).unwrap();
+        let output = FetchOptions::new(url, Some(token), PROJECT_START).unwrap();
         assert_eq!(output, result);
     }
 

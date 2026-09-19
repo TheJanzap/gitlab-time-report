@@ -185,7 +185,6 @@ mod tests {
             WEEKS_PER_SPRINT_DEFAULT,
             SPRINTS,
             TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
         );
 
         let (burndown_series, x_axis) = calculate_burndown_data(
@@ -224,7 +223,6 @@ mod tests {
             WEEKS_PER_SPRINT,
             SPRINTS,
             TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
         );
         let (burndown_series, x_axis) = calculate_burndown_data(
             &time_logs,
@@ -262,7 +260,6 @@ mod tests {
             WEEKS_PER_SPRINT_DEFAULT,
             SPRINTS,
             TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
         );
 
         let (burndown_series, x_axis) =
@@ -295,7 +292,6 @@ mod tests {
             WEEKS_PER_SPRINT,
             SPRINTS,
             TOTAL_HOURS_PER_PERSON,
-            PROJECT_START,
         );
         let (burndown_series, x_axis) =
             calculate_burndown_data(&time_logs, &BurndownType::Total, &chart_options.unwrap());
