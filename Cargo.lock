@@ -1038,7 +1038,7 @@ dependencies = [
 
 [[package]]
 name = "gitlab-time-report"
-version = "1.4.0"
+version = "1.5.0"
 dependencies = [
  "build_html",
  "charming",
@@ -1057,7 +1057,7 @@ dependencies = [
 
 [[package]]
 name = "gitlab-time-report-cli"
-version = "1.4.0"
+version = "1.5.0"
 dependencies = [
  "assert_cmd",
  "chrono",
