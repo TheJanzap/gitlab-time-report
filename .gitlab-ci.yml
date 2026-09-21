@@ -436,7 +436,9 @@ release:create:
 release:crates.io:
   stage: release
   extends: .rust-template
-  needs: [ "release:create" ]
+  needs: 
+    - job: "release:create"
+      optional: true
   script:
     - if [ "$RELEASE_DRY_RUN" = "true" ]; then
       arg="--dry-run"; fi;
