@@ -316,19 +316,16 @@ mod tests {
 
         let result = create_ideal_burndown_line(SPRINTS, REQUIRED_HOURS);
         assert_eq!(result.0, "Ideal");
-        #[expect(clippy::float_cmp)]
-        {
-            assert_eq!(
-                *result.1.first().unwrap(),
-                REQUIRED_HOURS,
-                "Ideal burndown line should start with the full amount of hours"
-            );
-            assert_eq!(
-                *result.1.last().unwrap(),
-                0.0,
-                "Ideal burndown line should end with 0 hours"
-            );
-        }
+        assert_eq!(
+            *result.1.first().unwrap(),
+            REQUIRED_HOURS,
+            "Ideal burndown line should start with the full amount of hours"
+        );
+        assert_eq!(
+            *result.1.last().unwrap(),
+            0.0,
+            "Ideal burndown line should end with 0 hours"
+        );
         assert_eq!(result.1, IDEAL_DATA);
     }
 

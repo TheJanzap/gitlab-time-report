@@ -254,10 +254,7 @@ mod tests {
         let burndown_options = result.unwrap();
         assert_eq!(burndown_options.weeks_per_sprint, WEEKS_PER_SPRINT_DEFAULT);
         assert_eq!(burndown_options.sprints, SPRINTS);
-        #[expect(clippy::float_cmp)]
-        {
-            assert_eq!(burndown_options.hours_per_person, TOTAL_HOURS_PER_PERSON);
-        }
+        assert_eq!(burndown_options.hours_per_person, TOTAL_HOURS_PER_PERSON);
         assert_eq!(burndown_options.start_date, PROJECT_START.unwrap());
     }
 

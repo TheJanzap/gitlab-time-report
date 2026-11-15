@@ -1,6 +1,6 @@
 # Global variables
 variables:
-  RUST_VERSION: "1.98"
+  RUST_VERSION: "1.100"
   RUST_CONTAINER: "rust:$RUST_VERSION"
   BINARY_NAME: "gitlab-time-report-cli"
   PACKAGE_REGISTRY_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/gitlab-time-report/$CI_COMMIT_TAG"
@@ -436,7 +436,7 @@ release:create:
 release:crates.io:
   stage: release
   extends: .rust-template
-  needs: 
+  needs:
     - job: "release:create"
       optional: true
   script:

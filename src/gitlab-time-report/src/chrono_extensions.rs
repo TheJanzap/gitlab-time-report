@@ -41,7 +41,6 @@ mod tests {
     }
 
     #[test]
-    #[expect(clippy::float_cmp)]
     fn test_total_hours() {
         let delta = TimeDelta::hours(5) + TimeDelta::minutes(45);
         assert_eq!(delta.total_hours(), 5.75);
